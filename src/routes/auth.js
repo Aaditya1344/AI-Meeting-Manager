@@ -3,26 +3,73 @@ const router = express.Router();
 const { readDB, writeDB } = require('../db/database');
 
 /**
- * Google Login (Supports both OAuth flow & quick Google Workspace selection)
+ * Standard Email & Password Login
+ */
+router.post('/login', (req, res) => {
+  const { email, password } = req.body;
+  const db = readDB();
+
+  if (!email) {
+    return res.status(400).json({ error: 'Please enter your institutional email.' });
+  }
+
+  let user = db.users.find(u => u.email.toLowerCase() === email.toLowerCase().trim());
+
+  if (!user) {
+    // If new user logging in with email
+    const isInitialAdmin = 
+      email.toLowerCase().includes('aditya') || 
+      email.toLowerCase().includes('arun');
+
+    const nameFromEmail = email.split('@')[0].replace('.', ' ').replace(/^[a-z]/, c => c.toUpperCase());
+
+    user = {
+      id: `usr_${Date.now()}`,
+      name: nameFromEmail,
+      email: email.trim().toLowerCase(),
+      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(nameFromEmail)}&backgroundColor=4f46e5`,
+      designation: "",
+      department: "",
+      employee_id: "",
+      cabin: "",
+      role: isInitialAdmin ? "admin" : "faculty",
+      onboarded: false,
+      gcal_connected: true
+    };
+
+    db.users.push(user);
+    writeDB(db);
+  }
+
+  res.json({
+    message: "Login successful",
+    user,
+    requiresOnboarding: !user.onboarded
+  });
+});
+
+/**
+ * Direct Google OAuth Login
  */
 router.post('/google', (req, res) => {
   const { email, name, avatar } = req.body;
   const db = readDB();
 
-  let user = db.users.find(u => u.email.toLowerCase() === (email || '').toLowerCase());
+  const userEmail = (email || 'user@igdtuw.ac.in').toLowerCase().trim();
+  let user = db.users.find(u => u.email.toLowerCase() === userEmail);
 
   if (!user) {
-    // Determine default role: if email or name contains aditya or arun -> admin, else faculty
     const isInitialAdmin = 
-      (email && (email.toLowerCase().includes('aditya') || email.toLowerCase().includes('arun'))) ||
+      userEmail.includes('aditya') || 
+      userEmail.includes('arun') ||
       (name && (name.toLowerCase().includes('aditya') || name.toLowerCase().includes('arun')));
 
     user = {
       id: `usr_${Date.now()}`,
-      name: name || "Google User",
-      email: email || `user_${Date.now()}@igdtuw.ac.in`,
-      avatar: avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name || 'User')}&backgroundColor=4f46e5`,
-      designation: "", // Pending onboarding
+      name: name || "Faculty Member",
+      email: userEmail,
+      avatar: avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name || 'Faculty')}&backgroundColor=4f46e5`,
+      designation: "",
       department: "",
       employee_id: "",
       cabin: "",
@@ -43,7 +90,7 @@ router.post('/google', (req, res) => {
 });
 
 /**
- * Complete Profile Onboarding (Designation, Department, Employee ID, Cabin)
+ * Complete Profile Onboarding
  */
 router.post('/onboard', (req, res) => {
   const { userId, designation, department, employee_id, cabin } = req.body;
@@ -54,14 +101,12 @@ router.post('/onboard', (req, res) => {
     return res.status(404).json({ error: 'User not found' });
   }
 
-  // Update user-provided institutional metadata
   user.designation = designation || user.designation || "Assistant Professor";
   user.department = department || user.department || "Computer Science & Engineering";
   user.employee_id = employee_id || user.employee_id || `IGDTUW-EMP-${Math.floor(100 + Math.random() * 900)}`;
   user.cabin = cabin || user.cabin || "Main Faculty Block";
   user.onboarded = true;
 
-  // If role wasn't already admin and user is HOD/Dean, give organizer role
   if (user.role !== 'admin') {
     if (designation.toLowerCase().includes('hod') || designation.toLowerCase().includes('head') || designation.toLowerCase().includes('dean')) {
       user.role = 'organizer';
@@ -77,14 +122,14 @@ router.post('/onboard', (req, res) => {
 });
 
 /**
- * Get current session user
+ * Current user
  */
 router.get('/me', (req, res) => {
   res.json({ user: req.user });
 });
 
 /**
- * Quick User Switcher for Testing / Demonstration
+ * User switch helper
  */
 router.post('/switch-user', (req, res) => {
   const { userId } = req.body;

@@ -1,7 +1,7 @@
-﻿// IGDTUW Meeting Manager Frontend Controller
+﻿// MeetFlow Frontend Controller — Indira Gandhi Delhi Technical University
 
 let currentUser = null;
-let currentScreen = 'dashboard';
+let currentScreen = 'login';
 let currentWizardStep = 1;
 let selectedStaffIds = ['usr_sharma', 'usr_sneha', 'usr_manpreet', 'usr_ananya'];
 let currentAvailabilityData = null;
@@ -9,21 +9,33 @@ let currentSelectedSlot = null;
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', async () => {
-  await initSession();
   setupEventListeners();
-  navigateTo('dashboard');
+  await initSession();
 });
 
 async function initSession() {
-  try {
-    const savedUserId = localStorage.getItem('igdtuw_user_id') || 'usr_sharma';
-    API.setUserId(savedUserId);
-    const data = await API.getMe();
-    currentUser = data.user;
-    updateUserUI();
-  } catch (err) {
-    console.error('Session init error:', err);
+  const savedUserId = localStorage.getItem('meetflow_user_id');
+  if (savedUserId) {
+    try {
+      API.setUserId(savedUserId);
+      const data = await API.getMe();
+      if (data && data.user) {
+        currentUser = data.user;
+        updateUserUI();
+        if (currentUser.onboarded) {
+          navigateTo('dashboard');
+        } else {
+          openOnboardingModal(currentUser);
+        }
+        return;
+      }
+    } catch (err) {
+      console.warn('Session expired or invalid, routing to login:', err);
+    }
   }
+
+  // If no active session, show Login screen
+  navigateTo('login');
 }
 
 function updateUserUI() {
@@ -34,7 +46,7 @@ function updateUserUI() {
   document.getElementById('user-display-email').innerText = currentUser.email;
   document.getElementById('user-avatar').innerText = currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
-  // Admin access check
+  // Admin access check for Aditya & Arun
   const isAdmin = currentUser.role === 'admin' || 
     currentUser.email.toLowerCase().includes('aditya') || 
     currentUser.email.toLowerCase().includes('arun') ||
@@ -52,50 +64,83 @@ function updateUserUI() {
       }
     }
   }
-
-  // Role button styles
-  const roleOrg = document.getElementById('role-btn-organizer');
-  const roleFac = document.getElementById('role-btn-faculty');
-  const roleAditya = document.getElementById('role-btn-aditya');
-  const roleArun = document.getElementById('role-btn-arun');
-
-  [roleOrg, roleFac, roleAditya, roleArun].forEach(b => {
-    if (b) b.className = 'px-2 py-1 rounded text-xs font-medium text-slate-600 hover:text-slate-900 transition';
-  });
-
-  if (currentUser.id === 'usr_aditya' && roleAditya) {
-    roleAditya.className = 'px-2 py-1 rounded text-xs font-bold text-slate-900 bg-white shadow-xs';
-  } else if (currentUser.id === 'usr_arun' && roleArun) {
-    roleArun.className = 'px-2 py-1 rounded text-xs font-bold text-slate-900 bg-white shadow-xs';
-  } else if (currentUser.id === 'usr_sharma' && roleOrg) {
-    roleOrg.className = 'px-2 py-1 rounded text-xs font-bold text-slate-900 bg-white shadow-xs';
-  } else if (roleFac) {
-    roleFac.className = 'px-2 py-1 rounded text-xs font-bold text-slate-900 bg-white shadow-xs';
-  }
 }
 
-// Switch User Demo Helper
-async function switchUser(userId) {
+// Login Actions
+async function handleEmailLogin(e) {
+  if (e) e.preventDefault();
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+
+  if (!email) {
+    alert('Please enter your university email address.');
+    return;
+  }
+
   try {
-    const res = await API.switchUser(userId);
+    const res = await API.emailLogin({ email, password });
     currentUser = res.user;
     API.setUserId(currentUser.id);
     updateUserUI();
-    
-    // Refresh active screen
-    navigateTo(currentScreen);
+
+    if (res.requiresOnboarding || !currentUser.onboarded) {
+      openOnboardingModal(currentUser);
+    } else {
+      navigateTo('dashboard');
+    }
   } catch (err) {
-    alert('Failed to switch user: ' + err.message);
+    alert('Login error: ' + err.message);
   }
+}
+
+async function handleGoogleLogin(directUser = null) {
+  try {
+    let payload = {};
+    if (directUser) {
+      payload = directUser;
+    } else {
+      payload = {
+        name: "Dr. Rajesh Sharma",
+        email: "r.sharma@igdtuw.ac.in"
+      };
+    }
+
+    const res = await API.googleLogin(payload);
+    currentUser = res.user;
+    API.setUserId(currentUser.id);
+    updateUserUI();
+
+    if (res.requiresOnboarding || !currentUser.onboarded) {
+      openOnboardingModal(currentUser);
+    } else {
+      navigateTo('dashboard');
+    }
+  } catch (err) {
+    alert('Google login failed: ' + err.message);
+  }
+}
+
+// Quick Demo Login helper
+function quickFillLogin(email) {
+  document.getElementById('login-email').value = email;
+  document.getElementById('login-password').value = 'igdtuw@2026';
+  handleEmailLogin();
+}
+
+// Logout
+function logoutUser() {
+  API.setUserId(null);
+  currentUser = null;
+  localStorage.removeItem('meetflow_user_id');
+  navigateTo('login');
 }
 
 // Screen Navigation
 function navigateTo(screenId) {
-  // Guard Admin screen
   if (screenId === 'admin') {
-    const isAdmin = currentUser.role === 'admin' || 
+    const isAdmin = currentUser && (currentUser.role === 'admin' || 
       currentUser.email.toLowerCase().includes('aditya') || 
-      currentUser.email.toLowerCase().includes('arun');
+      currentUser.email.toLowerCase().includes('arun'));
     if (!isAdmin) {
       alert('Access Denied: The Admin Control Panel is strictly restricted to designated administrators (Aditya & Arun).');
       return;
@@ -117,6 +162,17 @@ function navigateTo(screenId) {
   const target = document.getElementById('screen-' + screenId);
   if (target) target.classList.remove('hidden');
 
+  // Sidebar visibility: Hide sidebar entirely on login screen
+  const sidebar = document.getElementById('app-sidebar');
+  const header = document.getElementById('app-header');
+  if (screenId === 'login') {
+    if (sidebar) sidebar.classList.add('hidden');
+    if (header) header.classList.add('hidden');
+  } else {
+    if (sidebar) sidebar.classList.remove('hidden');
+    if (header) header.classList.remove('hidden');
+  }
+
   // Sidebar navigation active highlight
   document.querySelectorAll('.nav-item').forEach(btn => {
     btn.classList.remove('text-indigo-700', 'bg-indigo-50', 'font-semibold');
@@ -129,10 +185,10 @@ function navigateTo(screenId) {
     activeNav.classList.add('text-indigo-700', 'bg-indigo-50', 'font-semibold');
   }
 
-  // Load screen data
-  loadScreenData(screenId);
+  if (screenId !== 'login') {
+    loadScreenData(screenId);
+  }
 
-  // Scroll to top
   const canvas = document.getElementById('main-content-canvas');
   if (canvas) canvas.scrollTop = 0;
 }
@@ -162,9 +218,6 @@ async function loadScreenData(screenId) {
       case 'admin':
         await renderAdminScreen();
         break;
-      case 'calendar':
-        await renderCalendarScreen();
-        break;
     }
   } catch (err) {
     console.error(`Error loading data for ${screenId}:`, err);
@@ -173,29 +226,37 @@ async function loadScreenData(screenId) {
 
 // 1. Dashboard Renderer
 async function renderDashboard() {
-  const [meetingsData, aiData] = await Promise.all([
-    API.getMeetings(),
-    API.getAIStats()
-  ]);
-
-  document.getElementById('dash-upcoming-count').innerText = meetingsData.meetings.length;
+  try {
+    const [meetingsData, aiData] = await Promise.all([
+      API.getMeetings(),
+      API.getAIStats()
+    ]);
+    const upcomingEl = document.getElementById('dash-upcoming-count');
+    if (upcomingEl) upcomingEl.innerText = meetingsData.meetings.length;
+  } catch (e) {
+    console.warn(e);
+  }
 }
 
 // 2. Timetable Screen & Upload Renderer
 async function renderTimetableScreen() {
-  const data = await API.getTimetable();
-  const entries = data.timetable;
-  document.getElementById('tt-total-entries').innerText = `${entries.length} Entries`;
+  try {
+    const data = await API.getTimetable();
+    const entries = data.timetable;
+    const countEl = document.getElementById('tt-total-entries');
+    if (countEl) countEl.innerText = `${entries.length} Entries`;
+  } catch (e) {
+    console.warn(e);
+  }
 }
 
-// Handle Timetable File Upload (PDF, Picture/Image, CSV, Excel)
 async function handleTimetableFileUpload(inputElement) {
   if (!inputElement.files || !inputElement.files[0]) return;
 
   const file = inputElement.files[0];
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('userId', currentUser.id);
+  formData.append('userId', currentUser ? currentUser.id : 'usr_sharma');
 
   const statusEl = document.getElementById('tt-upload-status');
   if (statusEl) {
@@ -362,7 +423,7 @@ async function finalizeAndScheduleMeeting() {
   const location = document.getElementById('meet-location').value;
 
   try {
-    const res = await API.createMeeting({
+    await API.createMeeting({
       title,
       description,
       date,
@@ -380,7 +441,7 @@ async function finalizeAndScheduleMeeting() {
   }
 }
 
-// 4. Staff Directory Renderer
+// 4. Staff Directory
 async function renderStaffDirectory() {
   const data = await API.getStaff();
   const container = document.getElementById('staff-grid-container');
@@ -407,7 +468,7 @@ async function renderStaffDirectory() {
   `).join('');
 }
 
-// 5. MoM Hub Renderer
+// 5. MoM Hub
 async function renderMoMScreen() {
   const data = await API.getMoMs();
   const container = document.getElementById('mom-cards-container');
@@ -450,7 +511,7 @@ function openMoMEditor(momId) {
   navigateTo('mom-editor');
 }
 
-// 6. AI Activity Screen Renderer
+// 6. AI Activity Screen
 async function renderAIActivityScreen() {
   const data = await API.getAILogs();
   const tableBody = document.getElementById('ai-logs-table-body');
@@ -465,7 +526,7 @@ async function renderAIActivityScreen() {
   `).join('');
 }
 
-// 7. Admin Screen Renderer (Gated for Aditya & Arun)
+// 7. Admin Screen
 async function renderAdminScreen() {
   try {
     const [stats, staffData] = await Promise.all([
@@ -509,7 +570,7 @@ async function promptRoleChange(userId, userName) {
   }
 }
 
-// 8. Meetings List Renderer
+// 8. Meetings List
 async function renderMeetingsList() {
   const data = await API.getMeetings();
   const tbody = document.getElementById('my-meetings-tbody');
@@ -540,11 +601,6 @@ async function renderMeetingsList() {
   `).join('');
 }
 
-// 9. Calendar Renderer
-async function renderCalendarScreen() {
-  // Static / dynamic week matrix is rendered
-}
-
 // Onboarding Modal Submission
 async function submitOnboardingForm(e) {
   if (e) e.preventDefault();
@@ -565,7 +621,7 @@ async function submitOnboardingForm(e) {
     currentUser = res.user;
     updateUserUI();
     document.getElementById('onboarding-modal').classList.add('hidden');
-    alert('✓ Onboarding completed! Welcome to IGDTUW Staff Meeting Portal.');
+    alert('✓ Onboarding completed! Welcome to MeetFlow.');
     navigateTo('dashboard');
   } catch (err) {
     alert('Onboarding failed: ' + err.message);
@@ -582,5 +638,10 @@ function setupEventListeners() {
   const onboardForm = document.getElementById('onboarding-form');
   if (onboardForm) {
     onboardForm.addEventListener('submit', submitOnboardingForm);
+  }
+
+  const loginForm = document.getElementById('email-login-form');
+  if (loginForm) {
+    loginForm.addEventListener('submit', handleEmailLogin);
   }
 }

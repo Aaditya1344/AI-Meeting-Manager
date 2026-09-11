@@ -1,20 +1,20 @@
-<<<<<<< HEAD
-﻿# IGDTUW AI Staff Meeting Organizer 🎓
+﻿# MeetFlow — AI Staff Meeting Organizer 🎓
 
 > **Institutional Staff Meeting Scheduling & Lifecycle Platform for Indira Gandhi Delhi Technical University (IGDTUW)**
 
-An AI-powered academic meeting management system that automatically overlays faculty teaching timetables with real-time Google Calendar availability, calculates conflict-free meeting windows, and autonomously manages meeting lifecycle operations (reminders, conflict watchdogs, and formal Minutes of Meeting (MoM) preparation).
+An intelligent academic meeting management platform that automatically overlays faculty teaching timetables with real-time Google Calendar availability, calculates conflict-free meeting windows, and autonomously manages meeting lifecycle operations (reminders, conflict watchdogs, and formal Minutes of Meeting (MoM) preparation).
 
 ---
 
 ## 🌟 Key Features
 
-1. **Google Account Authentication & Profile Onboarding**:
-   - Authenticate with Google Workspace.
-   - First-time onboarding collects the faculty member's **Official Designation**, **Academic Department**, **Employee ID**, and **Cabin/Room Number** while pulling Name, Email, and Google Avatar directly from Google.
+1. **Flexible Login Screen**:
+   - Clean login landing page shown by default on load.
+   - Sign in using **Institutional Email & Password** or directly via **Google Workspace**.
+   - First-time onboarding collects the faculty member's **Official Designation**, **Academic Department**, **Employee ID**, and **Cabin/Room Number**.
 
 2. **Role-Based Access Control (RBAC)**:
-   - **Admin Control Panel**: Strictly gated. Authorized exclusively for designated administrators: **Aditya** (`aditya@igdtuw.ac.in`) and **Arun** (`arun@igdtuw.ac.in`).
+   - **Admin Control Panel**: Gated exclusively for designated administrators: **Aditya** (`aditya@igdtuw.ac.in`) and **Arun** (`arun@igdtuw.ac.in`).
    - Other institutional roles: **Meeting Organizer** (HODs, Deans, Committee Chairs) and **Faculty / Teacher**.
 
 3. **Timetable Ingestion & Upload (PDF & Picture / Image Support)**:
@@ -22,10 +22,10 @@ An AI-powered academic meeting management system that automatically overlays fac
    - Built-in intelligent parser maps lecture hours, lab sessions, and open research slots.
 
 4. **5-Step Smart Scheduling Wizard & Real-time Availability Matrix**:
-   - **Step 1 — Details**: Title, date, target time, duration, location, Google Meet auto-generator, and agenda.
+   - **Step 1 — Details**: Title, date, target time, duration (30/60/90 mins), venue, Google Meet auto-generator, and agenda.
    - **Step 2 — Staff Select**: Search and check faculty across academic departments.
-   - **Step 3 — Availability Grid**: Visual hour-by-hour matrix (🟢 FREE, 🔴 BUSY: Lecture/G-Cal, ⚪ LUNCH) with consensus calculation.
-   - **Step 4 — Best Slots**: AI-scored 5-star meeting recommendations with rationale.
+   - **Step 3 — Availability Grid**: Visual hour-by-hour matrix (🟢 FREE, 🔴 BUSY: Class/G-Cal, ⚪ LUNCH) with consensus calculation.
+   - **Step 4 — Best Slots**: AI-scored 5-star meeting recommendations with feasibility rationale.
    - **Step 5 — Confirmation**: Review summary and 1-click scheduling.
 
 5. **AI Background Automation Daemon (NOT a Chatbot)**:
@@ -37,20 +37,21 @@ An AI-powered academic meeting management system that automatically overlays fac
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Deployment Guide
 
-### 1. Installation
-```bash
-git clone https://github.com/Aaditya1344/AI-Meeting-Manager.git
-cd AI-Meeting-Manager
-npm install
-```
+### Option A: Deploy Frontend to Vercel & Backend to Render
 
-### 2. Run the Server
-```bash
-npm start
-```
-The server will start on `http://localhost:3000`.
+#### 1. Backend on Render:
+1. Go to **[dashboard.render.com](https://dashboard.render.com/)** &rarr; **New Web Service**.
+2. Connect `Aaditya1344/AI-Meeting-Manager`.
+3. Set **Build Command**: `npm install` and **Start Command**: `node server.js`.
+4. Render will provide your backend URL (e.g. `https://meetflow-backend.onrender.com`).
+
+#### 2. Frontend on Vercel:
+1. Go to **[vercel.com](https://vercel.com/)** &rarr; **Add New Project**.
+2. Import `Aaditya1344/AI-Meeting-Manager`.
+3. Framework Preset: **Other** / Root directory: `./` (or `public`).
+4. Click **Deploy**. Vercel uses `vercel.json` to serve the static frontend.
 
 ---
 
@@ -64,20 +65,3 @@ The server will start on `http://localhost:3000`.
 | **Dr. Sneha Kumar** | `sneha.k@igdtuw.ac.in` | `faculty` | Associate Professor (IT) |
 | **Dr. Manpreet Singh** | `m.singh@igdtuw.ac.in` | `faculty` | Assistant Professor (ECE) |
 | **Prof. Ananya Roy** | `ananya.r@igdtuw.ac.in` | `faculty` | Assistant Professor (MAE) |
-
----
-
-## 📡 API Endpoints
-
-- `POST /api/auth/google` — Google authentication
-- `POST /api/auth/onboard` — Save designation, department & employee metadata
-- `GET /api/timetable` — Get timetable
-- `POST /api/timetable/upload` — Upload PDF / Timetable photo
-- `POST /api/meetings/check-availability` — Calculate availability matrix & 5-star recommendations
-- `POST /api/meetings/create` — Schedule meeting & push to Google Calendar
-- `GET /api/mom` & `PUT /api/mom/:id` — Minutes of Meeting lifecycle
-- `GET /api/ai/logs` — Real-time AI background automation stream
-- `GET /api/admin/stats` & `POST /api/admin/assign-role` — Admin Control Panel (Aditya & Arun only)
-=======
-# AI-Meeting-Manager
->>>>>>> 79e9352e062020ec5d22290852cb9d9ede6f503a

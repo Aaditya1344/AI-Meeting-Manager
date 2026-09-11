@@ -1,25 +1,39 @@
 ﻿/**
- * IGDTUW Meeting Manager API Client
+ * MeetFlow API Client — Configured for Vercel Frontend + Render Backend
  */
 const API = {
-  currentUserId: 'usr_sharma',
+  currentUserId: localStorage.getItem('meetflow_user_id') || null,
+  
+  // Custom Render Backend URL if hosted separately on Vercel
+  baseUrl: localStorage.getItem('meetflow_api_url') || '',
+
+  setApiUrl(url) {
+    this.baseUrl = url.replace(/\/+$/, '');
+    localStorage.setItem('meetflow_api_url', this.baseUrl);
+  },
 
   setUserId(id) {
     this.currentUserId = id;
-    localStorage.setItem('igdtuw_user_id', id);
+    if (id) {
+      localStorage.setItem('meetflow_user_id', id);
+    } else {
+      localStorage.removeItem('meetflow_user_id');
+    }
   },
 
   getHeaders() {
     return {
       'Content-Type': 'application/json',
-      'x-user-id': this.currentUserId || localStorage.getItem('igdtuw_user_id') || 'usr_sharma'
+      'x-user-id': this.currentUserId || ''
     };
   },
 
   async request(endpoint, options = {}) {
-    const headers = options.isFormData ? { 'x-user-id': this.currentUserId } : { ...this.getHeaders(), ...options.headers };
+    const url = `${this.baseUrl}/api${endpoint}`;
+    const headers = options.isFormData ? { 'x-user-id': this.currentUserId || '' } : { ...this.getHeaders(), ...options.headers };
+    
     try {
-      const response = await fetch(`/api${endpoint}`, {
+      const response = await fetch(url, {
         ...options,
         headers
       });
@@ -35,6 +49,9 @@ const API = {
   },
 
   // Auth
+  emailLogin(payload) {
+    return this.request('/auth/login', { method: 'POST', body: JSON.stringify(payload) });
+  },
   googleLogin(payload) {
     return this.request('/auth/google', { method: 'POST', body: JSON.stringify(payload) });
   },
@@ -48,7 +65,7 @@ const API = {
     return this.request('/auth/switch-user', { method: 'POST', body: JSON.stringify({ userId }) });
   },
 
-  // Users / Staff
+  // Users
   getStaff() {
     return this.request('/users');
   },
@@ -61,9 +78,10 @@ const API = {
     return this.request(`/timetable?userId=${userId || this.currentUserId}`);
   },
   uploadTimetableFile(formData) {
-    return fetch('/api/timetable/upload', {
+    const url = `${this.baseUrl}/api/timetable/upload`;
+    return fetch(url, {
       method: 'POST',
-      headers: { 'x-user-id': this.currentUserId },
+      headers: { 'x-user-id': this.currentUserId || '' },
       body: formData
     }).then(r => r.json());
   },
@@ -79,7 +97,7 @@ const API = {
     return this.request('/calendar/sync', { method: 'POST' });
   },
 
-  // Meetings & Availability Matrix
+  // Meetings
   getMeetings(status) {
     return this.request(`/meetings${status ? `?status=${status}` : ''}`);
   },
@@ -127,7 +145,7 @@ const API = {
     return this.request('/ai/stats');
   },
 
-  // Admin
+  // Admin (Gated)
   getAdminStats() {
     return this.request('/admin/stats');
   },
