@@ -1,9 +1,7 @@
 ﻿{
-  "version": 2,
-  "outputDirectory": "public",
   "rewrites": [
     {
-      "source": "/((?!api|uploads|css|js|favicon.ico).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
