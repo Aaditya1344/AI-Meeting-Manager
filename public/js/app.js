@@ -99,9 +99,10 @@ async function handleGoogleLogin(directUser = null) {
     if (directUser) {
       payload = directUser;
     } else {
+      const email = prompt('Sign in with Google Workspace:\nEnter your institutional email address:', '');
+      if (!email || !email.trim()) return;
       payload = {
-        name: "Dr. Rajesh Sharma",
-        email: "r.sharma@igdtuw.ac.in"
+        email: email.trim()
       };
     }
 
@@ -118,13 +119,6 @@ async function handleGoogleLogin(directUser = null) {
   } catch (err) {
     alert('Google login failed: ' + err.message);
   }
-}
-
-// Quick Demo Login helper
-function quickFillLogin(email) {
-  document.getElementById('login-email').value = email;
-  document.getElementById('login-password').value = 'igdtuw@2026';
-  handleEmailLogin();
 }
 
 // Logout
