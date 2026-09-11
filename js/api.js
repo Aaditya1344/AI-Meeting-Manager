@@ -116,7 +116,9 @@ function setLocalStore(key, val) {
 
 const API = {
   currentUserId: localStorage.getItem('meetflow_user_id') || null,
-  baseUrl: localStorage.getItem('meetflow_api_url') || '',
+  baseUrl: localStorage.getItem('meetflow_api_url') !== null
+    ? localStorage.getItem('meetflow_api_url')
+    : 'https://ai-meeting-manager-2ayn.onrender.com',
 
   setApiUrl(url) {
     this.baseUrl = (url || '').replace(/\/+$/, '');

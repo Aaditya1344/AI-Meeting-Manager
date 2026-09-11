@@ -22,8 +22,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static assets
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Apply Auth Middleware to API endpoints
@@ -49,9 +48,31 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Fallback to single page app index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Root API Endpoint (Render Pure Backend Notice)
+app.get('/', (req, res) => {
+  res.json({
+    status: 'online',
+    service: 'MeetFlow Backend API Engine',
+    institution: 'Indira Gandhi Delhi Technical University (IGDTUW)',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      users: '/api/users',
+      timetable: '/api/timetable',
+      calendar: '/api/calendar',
+      meetings: '/api/meetings',
+      mom: '/api/mom',
+      ai: '/api/ai',
+      admin: '/api/admin'
+    },
+    frontend: 'The MeetFlow web application interface is hosted exclusively on Vercel.'
+  });
+});
+
+// 404 handler for unknown routes
+app.use((req, res) => {
+  res.status(404).json({ error: 'Endpoint not found on MeetFlow API Backend' });
 });
 
 // Start AI daemon
