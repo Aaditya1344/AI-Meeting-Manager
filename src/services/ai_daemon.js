@@ -1,4 +1,4 @@
-﻿const { readDB, writeDB } = require('../db/database');
+const { readDB, writeDB } = require('../db/database');
 
 /**
  * AI Autonomous Background Daemon for IGDTUW Meetings

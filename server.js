@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { authMiddleware } = require('./src/middleware/auth');

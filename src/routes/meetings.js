@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
 const { readDB, writeDB } = require('../db/database');
 const { computeAvailabilityMatrix } = require('../services/scheduler');

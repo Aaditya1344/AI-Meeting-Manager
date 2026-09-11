@@ -1,4 +1,4 @@
-﻿# MeetFlow — AI Staff Meeting Organizer 🎓
+# MeetFlow — AI Staff Meeting Organizer 🎓
 
 > **Institutional Staff Meeting Scheduling & Lifecycle Platform for Indira Gandhi Delhi Technical University (IGDTUW)**
 

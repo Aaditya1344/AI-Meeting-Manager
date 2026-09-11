@@ -1,4 +1,4 @@
-﻿const { readDB } = require('../db/database');
+const { readDB } = require('../db/database');
 
 /**
  * Authentication Middleware: Extract current user from header or session

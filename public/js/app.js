@@ -1,4 +1,4 @@
-﻿// MeetFlow Frontend Controller — Indira Gandhi Delhi Technical University
+// MeetFlow Frontend Controller — Indira Gandhi Delhi Technical University
 
 let currentUser = null;
 let currentScreen = 'login';

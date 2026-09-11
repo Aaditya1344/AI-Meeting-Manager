@@ -1,4 +1,4 @@
-﻿const { readDB } = require('../db/database');
+const { readDB } = require('../db/database');
 
 /**
  * Intelligent Scheduling & Availability Engine for IGDTUW
