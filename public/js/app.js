@@ -93,20 +93,59 @@ async function handleEmailLogin(e) {
   }
 }
 
-async function handleGoogleLogin(directUser = null) {
-  try {
-    let payload = {};
-    if (directUser) {
-      payload = directUser;
-    } else {
-      const email = prompt('Sign in with Google Workspace:\nEnter your institutional email address:', '');
-      if (!email || !email.trim()) return;
-      payload = {
-        email: email.trim()
-      };
-    }
+const GOOGLE_ACCOUNTS = [
+  { name: 'Prof. (Dr.) Amita Dev', email: 'vc@igdtuw.ac.in', designation: 'Hon’ble Vice Chancellor', avatar: 'AD' },
+  { name: 'Prof. Ananya Roy', email: 'ananya.roy@igdtuw.ac.in', designation: 'Dean of Academic Affairs', avatar: 'AR' },
+  { name: 'Dr. Rajesh Sharma', email: 'r.sharma@igdtuw.ac.in', designation: 'Professor & HOD (CSE)', avatar: 'RS' },
+  { name: 'Dr. Preeti Sehrawat', email: 'preeti.s@igdtuw.ac.in', designation: 'Associate Professor & HOD (IT)', avatar: 'PS' },
+  { name: 'Dr. Sneha Kapoor', email: 'sneha.k@igdtuw.ac.in', designation: 'Associate Professor (CSE)', avatar: 'SK' },
+  { name: 'Aditya (Admin)', email: 'aditya@igdtuw.ac.in', designation: 'University System Administrator', avatar: 'AD', isAdmin: true },
+  { name: 'Arun (Admin)', email: 'arun@igdtuw.ac.in', designation: 'Chief Technology Officer', avatar: 'AR', isAdmin: true }
+];
 
-    const res = await API.googleLogin(payload);
+function handleGoogleLogin() {
+  const modal = document.getElementById('google-account-modal');
+  const list = document.getElementById('google-accounts-list');
+  if (!modal || !list) return;
+
+  list.innerHTML = GOOGLE_ACCOUNTS.map(acc => `
+    <button onclick="handleGoogleAccountSelection('${acc.email}', '${acc.name}')" class="w-full flex items-center gap-3 p-3.5 hover:bg-slate-50 transition text-left group">
+      <div class="w-9 h-9 rounded-full ${acc.isAdmin ? 'bg-purple-600' : 'bg-slate-800'} text-white font-bold flex items-center justify-center text-xs group-hover:scale-105 transition">
+        ${acc.avatar}
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="font-bold text-slate-900 text-xs truncate flex items-center gap-1.5">
+          <span>${acc.name}</span>
+          ${acc.isAdmin ? '<span class="text-[9px] bg-purple-100 text-purple-800 font-extrabold px-1 rounded">ADMIN</span>' : ''}
+        </p>
+        <p class="text-[11px] text-slate-500 font-mono-code truncate">${acc.email}</p>
+      </div>
+      <svg class="w-4 h-4 text-slate-300 group-hover:text-indigo-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+    </button>
+  `).join('');
+
+  modal.classList.remove('hidden');
+}
+
+function closeGoogleAccountModal() {
+  const modal = document.getElementById('google-account-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function openCustomGoogleEmailPrompt() {
+  closeGoogleAccountModal();
+  const email = prompt('Sign in with Google Workspace:\nEnter your institutional email address:', 'faculty@igdtuw.ac.in');
+  if (email && email.trim()) {
+    const namePart = email.split('@')[0].replace(/[^a-zA-Z]/g, ' ');
+    const formattedName = namePart ? namePart.charAt(0).toUpperCase() + namePart.slice(1) : 'Faculty Member';
+    handleGoogleAccountSelection(email.trim(), formattedName);
+  }
+}
+
+async function handleGoogleAccountSelection(email, name) {
+  closeGoogleAccountModal();
+  try {
+    const res = await API.googleLogin({ email, name });
     currentUser = res.user;
     API.setUserId(currentUser.id);
     updateUserUI();
@@ -117,7 +156,7 @@ async function handleGoogleLogin(directUser = null) {
       navigateTo('dashboard');
     }
   } catch (err) {
-    alert('Google login failed: ' + err.message);
+    alert('Google authentication failed: ' + err.message);
   }
 }
 
@@ -303,12 +342,128 @@ function goToWizardStep(step) {
   const activeStepEl = document.getElementById('wizard-step-' + step);
   if (activeStepEl) activeStepEl.classList.remove('hidden');
 
-  if (step === 3) {
+  if (step === 2) {
+    renderWizardGroupedStaff();
+  } else if (step === 3) {
     loadAvailabilityMatrix();
   } else if (step === 4) {
     renderRecommendations();
   } else if (step === 5) {
     renderSummaryStep();
+  }
+}
+
+// Grouped Staff Selection Logic for Step 2
+let staffDirectoryCache = [];
+
+async function renderWizardGroupedStaff() {
+  const container = document.getElementById('wizard-participants-groups-container');
+  if (!container) return;
+
+  if (staffDirectoryCache.length === 0) {
+    const res = await API.getStaff();
+    staffDirectoryCache = (res && res.users) ? res.users : [];
+  }
+
+  const groups = {
+    vc_deans: {
+      title: '🏛️ Vice Chancellor & Deans',
+      description: 'University Executive Leadership & Directorate',
+      staff: staffDirectoryCache.filter(u => u.category === 'vc_deans' || (u.designation && (u.designation.includes('Chancellor') || u.designation.includes('Dean'))))
+    },
+    hods: {
+      title: '🎓 Heads of Department (HODs)',
+      description: 'Departmental Leadership (CSE, IT, ECE, MAE)',
+      staff: staffDirectoryCache.filter(u => u.category === 'hods' || (u.designation && (u.designation.includes('HOD') || u.designation.includes('Head'))))
+    },
+    faculty: {
+      title: '👨‍🏫 Faculty & Academic Staff',
+      description: 'Professors, Associate & Assistant Professors',
+      staff: staffDirectoryCache.filter(u => u.category === 'faculty' || (!u.designation?.includes('Chancellor') && !u.designation?.includes('Dean') && !u.designation?.includes('HOD') && u.role !== 'admin'))
+    }
+  };
+
+  let html = '';
+
+  for (const [key, group] of Object.entries(groups)) {
+    if (!group.staff || group.staff.length === 0) continue;
+
+    const groupStaffIds = group.staff.map(s => s.id);
+    const allSelected = groupStaffIds.every(id => selectedStaffIds.includes(id));
+
+    html += `
+      <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+          <label class="flex items-center gap-2.5 font-bold text-slate-900 cursor-pointer select-none">
+            <input type="checkbox" id="group-checkbox-${key}" ${allSelected ? 'checked' : ''} onchange="toggleStaffGroup('${key}', this.checked)" class="w-4 h-4 rounded text-indigo-600 cursor-pointer">
+            <span class="text-xs">${group.title}</span>
+            <span class="text-[10px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full">${group.staff.length}</span>
+          </label>
+          <span class="text-[11px] text-slate-400 font-medium">${group.description}</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          ${group.staff.map(s => {
+            const isChecked = selectedStaffIds.includes(s.id);
+            const borderClass = isChecked ? 'border-indigo-600 bg-indigo-50/40 ring-1 ring-indigo-500' : 'border-slate-200 bg-white hover:border-indigo-300';
+            return `
+              <label class="p-3 rounded-xl border ${borderClass} flex items-center justify-between cursor-pointer transition select-none">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <input type="checkbox" value="${s.id}" ${isChecked ? 'checked' : ''} onchange="toggleSingleStaff('${s.id}')" class="w-4 h-4 rounded text-indigo-600">
+                  <div class="min-w-0">
+                    <p class="font-bold text-slate-900 text-xs truncate">${s.name}</p>
+                    <p class="text-[11px] text-slate-500 truncate">${s.designation || s.department}</p>
+                  </div>
+                </div>
+                <span class="text-[10px] text-emerald-600 font-bold font-mono-code shrink-0">Synced ✓</span>
+              </label>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+  updateSelectedCountBadge();
+}
+
+function toggleStaffGroup(groupKey, isChecked) {
+  let targetStaff = [];
+  if (groupKey === 'vc_deans') {
+    targetStaff = staffDirectoryCache.filter(u => u.category === 'vc_deans' || (u.designation && (u.designation.includes('Chancellor') || u.designation.includes('Dean'))));
+  } else if (groupKey === 'hods') {
+    targetStaff = staffDirectoryCache.filter(u => u.category === 'hods' || (u.designation && (u.designation.includes('HOD') || u.designation.includes('Head'))));
+  } else if (groupKey === 'faculty') {
+    targetStaff = staffDirectoryCache.filter(u => u.category === 'faculty' || (!u.designation?.includes('Chancellor') && !u.designation?.includes('Dean') && !u.designation?.includes('HOD') && u.role !== 'admin'));
+  }
+
+  const ids = targetStaff.map(s => s.id);
+
+  if (isChecked) {
+    ids.forEach(id => {
+      if (!selectedStaffIds.includes(id)) selectedStaffIds.push(id);
+    });
+  } else {
+    selectedStaffIds = selectedStaffIds.filter(id => !ids.includes(id));
+  }
+
+  renderWizardGroupedStaff();
+}
+
+function toggleSingleStaff(staffId) {
+  if (selectedStaffIds.includes(staffId)) {
+    selectedStaffIds = selectedStaffIds.filter(id => id !== staffId);
+  } else {
+    selectedStaffIds.push(staffId);
+  }
+  renderWizardGroupedStaff();
+}
+
+function updateSelectedCountBadge() {
+  const badge = document.getElementById('selected-participants-count-badge');
+  if (badge) {
+    badge.innerText = `${selectedStaffIds.length} Selected`;
   }
 }
 
@@ -647,18 +802,56 @@ function setupEventListeners() {
 }
 
 function renderSettingsScreen() {
-  const urlInput = document.getElementById('settings-api-url');
-  if (urlInput) {
-    urlInput.value = localStorage.getItem('meetflow_api_url') || '';
-  }
+  if (!currentUser) return;
+  
+  const nameInput = document.getElementById('settings-name');
+  const emailInput = document.getElementById('settings-email');
+  const desigSelect = document.getElementById('settings-designation');
+  const deptSelect = document.getElementById('settings-department');
+  const empidInput = document.getElementById('settings-empid');
+  const cabinInput = document.getElementById('settings-cabin');
+  const phoneInput = document.getElementById('settings-phone');
+  const bioInput = document.getElementById('settings-bio');
+
+  if (nameInput) nameInput.value = currentUser.name || '';
+  if (emailInput) emailInput.value = currentUser.email || '';
+  if (desigSelect && currentUser.designation) desigSelect.value = currentUser.designation;
+  if (deptSelect && currentUser.department) deptSelect.value = currentUser.department;
+  if (empidInput) empidInput.value = currentUser.empId || currentUser.employee_id || '';
+  if (cabinInput) cabinInput.value = currentUser.cabin || '';
+  if (phoneInput) phoneInput.value = currentUser.phone || '';
+  if (bioInput) bioInput.value = currentUser.bio || '';
 }
 
-function saveApiUrlSetting() {
-  const urlInput = document.getElementById('settings-api-url');
-  if (urlInput) {
-    const val = urlInput.value.trim();
-    API.setApiUrl(val);
-    alert(val ? `✓ Backend API URL saved to: ${val}` : '✓ Switched to Local Resilient Mode.');
+async function saveProfileSettings(e) {
+  if (e) e.preventDefault();
+  if (!currentUser) return;
+
+  const name = document.getElementById('settings-name').value.trim();
+  const designation = document.getElementById('settings-designation').value;
+  const department = document.getElementById('settings-department').value;
+  const employee_id = document.getElementById('settings-empid').value.trim();
+  const cabin = document.getElementById('settings-cabin').value.trim();
+  const phone = document.getElementById('settings-phone').value.trim();
+  const bio = document.getElementById('settings-bio').value.trim();
+
+  try {
+    const res = await API.updateProfile({
+      userId: currentUser.id,
+      name,
+      designation,
+      department,
+      employee_id,
+      cabin,
+      phone,
+      bio
+    });
+
+    currentUser = res.user;
+    updateUserUI();
+    alert('✓ Profile and institutional data updated successfully!');
+  } catch (err) {
+    alert('Error updating profile: ' + err.message);
   }
 }
 

@@ -141,4 +141,34 @@ router.post('/switch-user', (req, res) => {
   res.json({ user });
 });
 
+/**
+ * Update Profile Settings
+ */
+router.post('/update-profile', (req, res) => {
+  const { userId, name, designation, department, employee_id, cabin, phone, bio } = req.body;
+  const db = readDB();
+
+  const targetId = userId || (req.user && req.user.id);
+  const user = db.users.find(u => u.id === targetId);
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  if (name) user.name = name;
+  if (designation) user.designation = designation;
+  if (department) user.department = department;
+  if (employee_id) user.employee_id = employee_id;
+  if (cabin) user.cabin = cabin;
+  if (phone) user.phone = phone;
+  if (bio) user.bio = bio;
+  user.onboarded = true;
+
+  writeDB(db);
+
+  res.json({
+    message: "Profile updated successfully",
+    user
+  });
+});
+
 module.exports = router;

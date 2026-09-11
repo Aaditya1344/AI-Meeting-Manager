@@ -4,13 +4,28 @@
  */
 
 // Initial Seed Database for local fallback
+// Initial Seed Database for local fallback with institutional grouping
 const INITIAL_STAFF = [
-  { id: 'usr_aditya', name: 'Aditya (Admin)', email: 'aditya@igdtuw.ac.in', role: 'admin', designation: 'University System Administrator', department: 'Computer Science & Engineering', empId: 'IGDTUW-ADM-001', cabin: 'Admin Block, Room 101', gcalSynced: true, timetableUploaded: true, avatar: 'AD', status_label: 'Available' },
-  { id: 'usr_arun', name: 'Arun (Admin)', email: 'arun@igdtuw.ac.in', role: 'admin', designation: 'Chief Technology Officer', department: 'Information Technology', empId: 'IGDTUW-ADM-002', cabin: 'Admin Block, Room 102', gcalSynced: true, timetableUploaded: true, avatar: 'AR', status_label: 'Available' },
-  { id: 'usr_sharma', name: 'Dr. Rajesh Sharma', email: 'r.sharma@igdtuw.ac.in', role: 'organizer', designation: 'Professor & Head of Department', department: 'Computer Science & Engineering', empId: 'IGDTUW-CSE-012', cabin: 'Room 302, CSE Block', gcalSynced: true, timetableUploaded: true, avatar: 'RS', status_label: 'Free Now' },
-  { id: 'usr_sneha', name: 'Dr. Sneha Kapoor', email: 'sneha.k@igdtuw.ac.in', role: 'faculty', designation: 'Associate Professor', department: 'Computer Science & Engineering', empId: 'IGDTUW-CSE-045', cabin: 'Room 315, CSE Block', gcalSynced: true, timetableUploaded: true, avatar: 'SK', status_label: 'In Class' },
-  { id: 'usr_manpreet', name: 'Dr. Manpreet Singh', email: 'manpreet.s@igdtuw.ac.in', role: 'faculty', designation: 'Associate Professor', department: 'Information Technology', empId: 'IGDTUW-IT-022', cabin: 'Room 204, IT Block', gcalSynced: true, timetableUploaded: true, avatar: 'MS', status_label: 'Available' },
-  { id: 'usr_ananya', name: 'Prof. Ananya Roy', email: 'ananya.roy@igdtuw.ac.in', role: 'faculty', designation: 'Dean of Academic Affairs', department: 'Academic Administration', empId: 'IGDTUW-ADM-005', cabin: 'Dean Office, Main Building', gcalSynced: true, timetableUploaded: true, avatar: 'AR', status_label: 'Senate Meeting' }
+  // 1. Vice Chancellor & Deans
+  { id: 'usr_vc', name: 'Prof. (Dr.) Amita Dev', email: 'vc@igdtuw.ac.in', role: 'organizer', category: 'vc_deans', designation: 'Hon’ble Vice Chancellor', department: 'Executive Directorate', empId: 'IGDTUW-VC-001', cabin: 'VC Secretariat, Main Building', gcalSynced: true, timetableUploaded: true, avatar: 'AD', status_label: 'Available' },
+  { id: 'usr_ananya', name: 'Prof. Ananya Roy', email: 'ananya.roy@igdtuw.ac.in', role: 'organizer', category: 'vc_deans', designation: 'Dean of Academic Affairs', department: 'Academic Administration', empId: 'IGDTUW-ADM-005', cabin: 'Dean Office, Main Building', gcalSynced: true, timetableUploaded: true, avatar: 'AR', status_label: 'Available' },
+  { id: 'usr_rksingh', name: 'Prof. R. K. Singh', email: 'rk.singh@igdtuw.ac.in', role: 'organizer', category: 'vc_deans', designation: 'Dean of Student Welfare & Placements', department: 'Student Welfare', empId: 'IGDTUW-ADM-008', cabin: 'DSW Office, Block-A', gcalSynced: true, timetableUploaded: true, avatar: 'RS', status_label: 'Available' },
+
+  // 2. Heads of Department (HODs)
+  { id: 'usr_sharma', name: 'Dr. Rajesh Sharma', email: 'r.sharma@igdtuw.ac.in', role: 'organizer', category: 'hods', designation: 'Professor & Head of Department (CSE)', department: 'Computer Science & Engineering', empId: 'IGDTUW-CSE-012', cabin: 'Room 302, CSE Block', gcalSynced: true, timetableUploaded: true, avatar: 'RS', status_label: 'Free Now' },
+  { id: 'usr_preeti', name: 'Dr. Preeti Sehrawat', email: 'preeti.s@igdtuw.ac.in', role: 'organizer', category: 'hods', designation: 'Associate Professor & Head of Department (IT)', department: 'Information Technology', empId: 'IGDTUW-IT-003', cabin: 'Room 201, IT Block', gcalSynced: true, timetableUploaded: true, avatar: 'PS', status_label: 'Available' },
+  { id: 'usr_jasdeep', name: 'Dr. Jasdeep Kaur', email: 'jasdeep.k@igdtuw.ac.in', role: 'organizer', category: 'hods', designation: 'Professor & Head of Department (ECE)', department: 'Electronics & Communication Engineering', empId: 'IGDTUW-ECE-002', cabin: 'Room 105, ECE Block', gcalSynced: true, timetableUploaded: true, avatar: 'JK', status_label: 'Available' },
+  { id: 'usr_manoj', name: 'Dr. Manoj Kumar', email: 'manoj.k@igdtuw.ac.in', role: 'organizer', category: 'hods', designation: 'Associate Professor & Head of Department (MAE)', department: 'Mechanical & Automation Engineering', empId: 'IGDTUW-MAE-004', cabin: 'Room 112, MAE Workshop', gcalSynced: true, timetableUploaded: true, avatar: 'MK', status_label: 'Available' },
+
+  // 3. Faculty & Academic Staff
+  { id: 'usr_sneha', name: 'Dr. Sneha Kapoor', email: 'sneha.k@igdtuw.ac.in', role: 'faculty', category: 'faculty', designation: 'Associate Professor', department: 'Computer Science & Engineering', empId: 'IGDTUW-CSE-045', cabin: 'Room 315, CSE Block', gcalSynced: true, timetableUploaded: true, avatar: 'SK', status_label: 'In Class' },
+  { id: 'usr_manpreet', name: 'Dr. Manpreet Singh', email: 'manpreet.s@igdtuw.ac.in', role: 'faculty', category: 'faculty', designation: 'Associate Professor', department: 'Information Technology', empId: 'IGDTUW-IT-022', cabin: 'Room 204, IT Block', gcalSynced: true, timetableUploaded: true, avatar: 'MS', status_label: 'Available' },
+  { id: 'usr_pooja', name: 'Dr. Pooja Rao', email: 'pooja.r@igdtuw.ac.in', role: 'faculty', category: 'faculty', designation: 'Assistant Professor', department: 'Electronics & Communication Engineering', empId: 'IGDTUW-ECE-031', cabin: 'Room 118, ECE Block', gcalSynced: true, timetableUploaded: true, avatar: 'PR', status_label: 'Available' },
+  { id: 'usr_divya', name: 'Dr. Divya Malik', email: 'divya.m@igdtuw.ac.in', role: 'faculty', category: 'faculty', designation: 'Assistant Professor', department: 'Computer Science & Engineering', empId: 'IGDTUW-CSE-058', cabin: 'Room 320, CSE Block', gcalSynced: true, timetableUploaded: true, avatar: 'DM', status_label: 'Available' },
+
+  // 4. University Admins (Strictly Restricted Access)
+  { id: 'usr_aditya', name: 'Aditya (Admin)', email: 'aditya@igdtuw.ac.in', role: 'admin', category: 'admin', designation: 'University System Administrator', department: 'Computer Science & Engineering', empId: 'IGDTUW-ADM-001', cabin: 'Admin Block, Room 101', gcalSynced: true, timetableUploaded: true, avatar: 'AD', status_label: 'Available' },
+  { id: 'usr_arun', name: 'Arun (Admin)', email: 'arun@igdtuw.ac.in', role: 'admin', category: 'admin', designation: 'Chief Technology Officer', department: 'Information Technology', empId: 'IGDTUW-ADM-002', cabin: 'Admin Block, Room 102', gcalSynced: true, timetableUploaded: true, avatar: 'AR', status_label: 'Available' }
 ];
 
 const INITIAL_TIMETABLE = {
@@ -242,14 +257,17 @@ const API = {
       return { success: true, user, requiresOnboarding: !user.onboarded && user.role !== 'admin' };
     }
 
-    // 3. Complete Onboarding
-    if (endpoint === '/auth/onboard') {
+    // 3. Complete Onboarding & Update Profile
+    if (endpoint === '/auth/onboard' || endpoint === '/auth/update-profile' || endpoint === '/users/profile') {
       const targetUser = users.find(u => u.id === (body.userId || this.currentUserId)) || users[0];
       if (targetUser) {
-        targetUser.designation = body.designation || targetUser.designation;
-        targetUser.department = body.department || targetUser.department;
-        targetUser.empId = body.employee_id || body.empId || targetUser.empId;
-        targetUser.cabin = body.cabin || targetUser.cabin;
+        if (body.name) targetUser.name = body.name;
+        if (body.designation) targetUser.designation = body.designation;
+        if (body.department) targetUser.department = body.department;
+        if (body.employee_id || body.empId) targetUser.empId = body.employee_id || body.empId;
+        if (body.cabin) targetUser.cabin = body.cabin;
+        if (body.phone) targetUser.phone = body.phone;
+        if (body.bio) targetUser.bio = body.bio;
         targetUser.onboarded = true;
         setLocalStore('users', users);
         return { success: true, user: targetUser };
@@ -493,6 +511,9 @@ const API = {
   },
   completeOnboarding(payload) {
     return this.request('/auth/onboard', { method: 'POST', body: JSON.stringify(payload) });
+  },
+  updateProfile(payload) {
+    return this.request('/auth/update-profile', { method: 'POST', body: JSON.stringify(payload) });
   },
   getMe() {
     return this.request('/auth/me');
