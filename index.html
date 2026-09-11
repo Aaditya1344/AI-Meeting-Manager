@@ -472,10 +472,30 @@
 
       <!-- SCREEN 15: SETTINGS -->
       <section id="screen-settings" class="hidden p-6 space-y-6">
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 text-xs space-y-4">
-          <h2 class="text-lg font-bold text-slate-900 border-b pb-2">Institutional Settings</h2>
-          <label class="flex items-center gap-2"><input type="checkbox" checked> 30-Minute Push Reminders</label>
-          <label class="flex items-center gap-2"><input type="checkbox" checked> Auto-MoM Generation on Meeting End</label>
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 text-xs space-y-5">
+          <div class="border-b pb-3">
+            <h2 class="text-lg font-bold text-slate-900">Institutional Settings & Backend API</h2>
+            <p class="text-slate-500 text-xs">Configure platform automation and your Render Backend API endpoint.</p>
+          </div>
+
+          <!-- Render Backend Connection Config -->
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+            <div>
+              <label class="block font-bold text-slate-800 mb-1">Render Backend API URL</label>
+              <div class="flex gap-2">
+                <input type="url" id="settings-api-url" placeholder="https://meetflow-backend.onrender.com (or leave blank for Local Resilient Mode)" class="flex-1 p-2.5 rounded-xl border border-slate-300 font-mono-code text-xs">
+                <button onclick="saveApiUrlSetting()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs">Save URL</button>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-1.5">💡 <em>Tip:</em> If left empty or when offline, MeetFlow runs seamlessly in built-in client resilient mode with full scheduling and admin capabilities.</p>
+            </div>
+          </div>
+
+          <div class="space-y-2 pt-2">
+            <h3 class="font-bold text-slate-800 text-xs">Automation Preferences</h3>
+            <label class="flex items-center gap-2 text-slate-700"><input type="checkbox" checked class="rounded text-indigo-600"> 30-Minute Automated Meeting Reminders</label>
+            <label class="flex items-center gap-2 text-slate-700"><input type="checkbox" checked class="rounded text-indigo-600"> Auto-MoM Generation on Meeting Conclusion</label>
+            <label class="flex items-center gap-2 text-slate-700"><input type="checkbox" checked class="rounded text-indigo-600"> Automatic Weekly Timetable Collision Detection</label>
+          </div>
         </div>
       </section>
 

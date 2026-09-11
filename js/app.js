@@ -218,6 +218,9 @@ async function loadScreenData(screenId) {
       case 'admin':
         await renderAdminScreen();
         break;
+      case 'settings':
+        renderSettingsScreen();
+        break;
     }
   } catch (err) {
     console.error(`Error loading data for ${screenId}:`, err);
@@ -643,5 +646,21 @@ function setupEventListeners() {
   const loginForm = document.getElementById('email-login-form');
   if (loginForm) {
     loginForm.addEventListener('submit', handleEmailLogin);
+  }
+}
+
+function renderSettingsScreen() {
+  const urlInput = document.getElementById('settings-api-url');
+  if (urlInput) {
+    urlInput.value = localStorage.getItem('meetflow_api_url') || '';
+  }
+}
+
+function saveApiUrlSetting() {
+  const urlInput = document.getElementById('settings-api-url');
+  if (urlInput) {
+    const val = urlInput.value.trim();
+    API.setApiUrl(val);
+    alert(val ? `✓ Backend API URL saved to: ${val}` : '✓ Switched to Local Resilient Mode.');
   }
 }
