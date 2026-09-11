@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿# IGDTUW AI Staff Meeting Organizer 🎓
 
 > **Institutional Staff Meeting Scheduling & Lifecycle Platform for Indira Gandhi Delhi Technical University (IGDTUW)**
@@ -77,3 +78,6 @@ The server will start on `http://localhost:3000`.
 - `GET /api/mom` & `PUT /api/mom/:id` — Minutes of Meeting lifecycle
 - `GET /api/ai/logs` — Real-time AI background automation stream
 - `GET /api/admin/stats` & `POST /api/admin/assign-role` — Admin Control Panel (Aditya & Arun only)
+=======
+# AI-Meeting-Manager
+>>>>>>> 79e9352e062020ec5d22290852cb9d9ede6f503a
