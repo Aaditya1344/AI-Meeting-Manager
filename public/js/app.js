@@ -69,11 +69,36 @@ function updateUserUI() {
 // Login Actions
 async function handleEmailLogin(e) {
   if (e) e.preventDefault();
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
+  const emailInput = document.getElementById('login-email');
+  const passwordInput = document.getElementById('login-password');
+  const errorBox = document.getElementById('email-login-error');
+
+  const email = emailInput ? emailInput.value.trim() : '';
+  const password = passwordInput ? passwordInput.value : '';
+
+  if (errorBox) {
+    errorBox.classList.add('hidden');
+    errorBox.innerText = '';
+  }
 
   if (!email) {
-    alert('Please enter your university email address.');
+    if (errorBox) {
+      errorBox.innerText = 'Please enter your institutional email address.';
+      errorBox.classList.remove('hidden');
+    } else {
+      alert('Please enter your institutional email address.');
+    }
+    return;
+  }
+
+  if (!password || password.trim().length === 0) {
+    if (errorBox) {
+      errorBox.innerText = 'Password is required to sign in to MeetFlow.';
+      errorBox.classList.remove('hidden');
+    } else {
+      alert('Password is required to sign in to MeetFlow.');
+    }
+    if (passwordInput) passwordInput.focus();
     return;
   }
 
@@ -89,7 +114,12 @@ async function handleEmailLogin(e) {
       navigateTo('dashboard');
     }
   } catch (err) {
-    alert('Login error: ' + err.message);
+    if (errorBox) {
+      errorBox.innerText = err.message || 'Login failed. Please verify your credentials.';
+      errorBox.classList.remove('hidden');
+    } else {
+      alert('Login error: ' + err.message);
+    }
   }
 }
 
@@ -103,14 +133,18 @@ const GOOGLE_ACCOUNTS = [
   { name: 'Arun (Admin)', email: 'arun@igdtuw.ac.in', designation: 'Chief Technology Officer', avatar: 'AR', isAdmin: true }
 ];
 
+let pendingGoogleAccount = null;
+
 function handleGoogleLogin() {
   const modal = document.getElementById('google-account-modal');
   const list = document.getElementById('google-accounts-list');
   if (!modal || !list) return;
 
+  switchGoogleModalStep('accounts');
+
   list.innerHTML = GOOGLE_ACCOUNTS.map(acc => `
-    <button onclick="handleGoogleAccountSelection('${acc.email}', '${acc.name}')" class="w-full flex items-center gap-3 p-3.5 hover:bg-slate-50 transition text-left group">
-      <div class="w-9 h-9 rounded-full ${acc.isAdmin ? 'bg-purple-600' : 'bg-slate-800'} text-white font-bold flex items-center justify-center text-xs group-hover:scale-105 transition">
+    <button type="button" onclick="handleGoogleAccountSelection('${acc.email}', '${acc.name.replace(/'/g, "\\'")}', '${acc.avatar}', ${Boolean(acc.isAdmin)})" class="w-full flex items-center gap-3 p-3.5 hover:bg-slate-50 transition text-left group">
+      <div class="w-9 h-9 rounded-full ${acc.isAdmin ? 'bg-purple-600' : 'bg-slate-800'} text-white font-bold flex items-center justify-center text-xs group-hover:scale-105 transition shrink-0">
         ${acc.avatar}
       </div>
       <div class="flex-1 min-w-0">
@@ -120,32 +154,98 @@ function handleGoogleLogin() {
         </p>
         <p class="text-[11px] text-slate-500 font-mono-code truncate">${acc.email}</p>
       </div>
-      <svg class="w-4 h-4 text-slate-300 group-hover:text-indigo-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+      <svg class="w-4 h-4 text-slate-300 group-hover:text-indigo-600 transition shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
     </button>
   `).join('');
 
   modal.classList.remove('hidden');
 }
 
-function closeGoogleAccountModal() {
-  const modal = document.getElementById('google-account-modal');
-  if (modal) modal.classList.add('hidden');
-}
+function switchGoogleModalStep(step) {
+  const stepAccounts = document.getElementById('google-modal-step-accounts');
+  const stepPassword = document.getElementById('google-modal-step-password');
+  const errorBox = document.getElementById('google-password-error');
 
-function openCustomGoogleEmailPrompt() {
-  closeGoogleAccountModal();
-  const email = prompt('Sign in with Google Workspace:\nEnter your institutional email address:', 'faculty@igdtuw.ac.in');
-  if (email && email.trim()) {
-    const namePart = email.split('@')[0].replace(/[^a-zA-Z]/g, ' ');
-    const formattedName = namePart ? namePart.charAt(0).toUpperCase() + namePart.slice(1) : 'Faculty Member';
-    handleGoogleAccountSelection(email.trim(), formattedName);
+  if (errorBox) {
+    errorBox.classList.add('hidden');
+    errorBox.innerText = '';
+  }
+
+  if (step === 'password') {
+    if (stepAccounts) stepAccounts.classList.add('hidden');
+    if (stepPassword) stepPassword.classList.remove('hidden');
+    const pwdInput = document.getElementById('google-auth-password');
+    if (pwdInput) {
+      pwdInput.value = '';
+      setTimeout(() => pwdInput.focus(), 50);
+    }
+  } else {
+    if (stepPassword) stepPassword.classList.add('hidden');
+    if (stepAccounts) stepAccounts.classList.remove('hidden');
   }
 }
 
-async function handleGoogleAccountSelection(email, name) {
-  closeGoogleAccountModal();
+function handleGoogleAccountSelection(email, name, avatar, isAdmin) {
+  pendingGoogleAccount = {
+    email: email.trim(),
+    name: name || 'Faculty Member',
+    avatar: avatar || email.substring(0, 2).toUpperCase(),
+    isAdmin: Boolean(isAdmin)
+  };
+
+  const nameEl = document.getElementById('google-selected-name');
+  const emailEl = document.getElementById('google-selected-email');
+  const avatarEl = document.getElementById('google-selected-avatar');
+
+  if (nameEl) nameEl.innerText = pendingGoogleAccount.name;
+  if (emailEl) emailEl.innerText = pendingGoogleAccount.email;
+  if (avatarEl) avatarEl.innerText = pendingGoogleAccount.avatar;
+
+  switchGoogleModalStep('password');
+}
+
+function toggleGooglePasswordVisibility() {
+  const pwdInput = document.getElementById('google-auth-password');
+  const checkbox = document.getElementById('google-show-pwd-checkbox');
+  if (pwdInput && checkbox) {
+    pwdInput.type = checkbox.checked ? 'text' : 'password';
+  }
+}
+
+async function handleGooglePasswordSubmit(event) {
+  if (event) event.preventDefault();
+  const pwdInput = document.getElementById('google-auth-password');
+  const errorBox = document.getElementById('google-password-error');
+  const password = pwdInput ? pwdInput.value : '';
+
+  if (errorBox) {
+    errorBox.classList.add('hidden');
+    errorBox.innerText = '';
+  }
+
+  if (!password || password.trim().length === 0) {
+    if (errorBox) {
+      errorBox.innerText = 'Please enter your password to sign in.';
+      errorBox.classList.remove('hidden');
+    }
+    if (pwdInput) pwdInput.focus();
+    return;
+  }
+
+  if (!pendingGoogleAccount) {
+    closeGoogleAccountModal();
+    return;
+  }
+
   try {
-    const res = await API.googleLogin({ email, name });
+    const res = await API.googleLogin({
+      email: pendingGoogleAccount.email,
+      name: pendingGoogleAccount.name,
+      password: password
+    });
+
+    closeGoogleAccountModal();
+
     currentUser = res.user;
     API.setUserId(currentUser.id);
     updateUserUI();
@@ -156,7 +256,30 @@ async function handleGoogleAccountSelection(email, name) {
       navigateTo('dashboard');
     }
   } catch (err) {
-    alert('Google authentication failed: ' + err.message);
+    if (errorBox) {
+      errorBox.innerText = 'Authentication error: ' + (err.message || 'Invalid credentials.');
+      errorBox.classList.remove('hidden');
+    } else {
+      alert('Authentication failed: ' + err.message);
+    }
+  }
+}
+
+function closeGoogleAccountModal() {
+  const modal = document.getElementById('google-account-modal');
+  if (modal) modal.classList.add('hidden');
+  pendingGoogleAccount = null;
+}
+
+function openCustomGoogleEmailPrompt() {
+  const email = prompt('Sign in with Google Workspace:\nEnter your institutional email address (@igdtuw.ac.in):', 'faculty@igdtuw.ac.in');
+  if (email && email.trim()) {
+    const cleanEmail = email.trim();
+    const namePart = cleanEmail.split('@')[0].replace(/[^a-zA-Z]/g, ' ');
+    const formattedName = namePart ? namePart.charAt(0).toUpperCase() + namePart.slice(1) : 'Faculty Member';
+    const avatar = cleanEmail.substring(0, 2).toUpperCase();
+    const isAdmin = cleanEmail.toLowerCase().includes('aditya') || cleanEmail.toLowerCase().includes('arun');
+    handleGoogleAccountSelection(cleanEmail, formattedName, avatar, isAdmin);
   }
 }
 

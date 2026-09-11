@@ -9,8 +9,12 @@ router.post('/login', (req, res) => {
   const { email, password } = req.body;
   const db = readDB();
 
-  if (!email) {
+  if (!email || !email.trim()) {
     return res.status(400).json({ error: 'Please enter your institutional email.' });
+  }
+
+  if (!password || !password.trim()) {
+    return res.status(400).json({ error: 'Password is required to sign in.' });
   }
 
   let user = db.users.find(u => u.email.toLowerCase() === email.toLowerCase().trim());

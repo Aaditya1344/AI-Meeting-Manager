@@ -203,6 +203,13 @@ const API = {
     // 1. Auth login
     if (endpoint === '/auth/login') {
       const email = (body.email || '').trim().toLowerCase();
+      const password = (body.password || '').trim();
+      if (!email) {
+        throw new Error('Please enter your institutional email.');
+      }
+      if (!password) {
+        throw new Error('Password is required to sign in.');
+      }
       let user = users.find(u => u.email.toLowerCase() === email);
       if (!user) {
         const namePart = email.split('@')[0].replace(/[^a-zA-Z]/g, ' ');
