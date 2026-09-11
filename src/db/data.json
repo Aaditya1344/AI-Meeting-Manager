@@ -1,0 +1,466 @@
+{
+  "users": [
+    {
+      "id": "usr_aditya",
+      "name": "Aditya",
+      "email": "aditya@igdtuw.ac.in",
+      "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Aditya&backgroundColor=4f46e5",
+      "designation": "Director of IT / System Administrator",
+      "department": "Computer Science & Information Technology",
+      "employee_id": "IGDTUW-EMP-001",
+      "cabin": "Admin Block, Room 101",
+      "role": "admin",
+      "onboarded": true,
+      "gcal_connected": true
+    },
+    {
+      "id": "usr_arun",
+      "name": "Arun",
+      "email": "arun@igdtuw.ac.in",
+      "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Arun&backgroundColor=7c3aed",
+      "designation": "Dean of Academic Affairs",
+      "department": "Academic Administration",
+      "employee_id": "IGDTUW-EMP-002",
+      "cabin": "Administrative Block, Room 204",
+      "role": "admin",
+      "onboarded": true,
+      "gcal_connected": true
+    },
+    {
+      "id": "usr_sharma",
+      "name": "Dr. Rajesh Sharma",
+      "email": "r.sharma@igdtuw.ac.in",
+      "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Rajesh+Sharma&backgroundColor=0284c7",
+      "designation": "Professor & HOD",
+      "department": "Computer Science & Engineering",
+      "employee_id": "IGDTUW-CSE-104",
+      "cabin": "CSE Department Block, Cabin 302",
+      "role": "organizer",
+      "onboarded": true,
+      "gcal_connected": true
+    },
+    {
+      "id": "usr_sneha",
+      "name": "Dr. Sneha Kumar",
+      "email": "sneha.k@igdtuw.ac.in",
+      "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Sneha+Kumar&backgroundColor=d97706",
+      "designation": "Associate Professor",
+      "department": "Information Technology",
+      "employee_id": "IGDTUW-IT-215",
+      "cabin": "IT Wing, Room 112",
+      "role": "faculty",
+      "onboarded": true,
+      "gcal_connected": true
+    },
+    {
+      "id": "usr_manpreet",
+      "name": "Dr. Manpreet Singh",
+      "email": "m.singh@igdtuw.ac.in",
+      "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Manpreet+Singh&backgroundColor=059669",
+      "designation": "Assistant Professor",
+      "department": "Electronics & Communication Engineering",
+      "employee_id": "IGDTUW-ECE-318",
+      "cabin": "ECE Lab Complex, Room 205",
+      "role": "faculty",
+      "onboarded": true,
+      "gcal_connected": true
+    },
+    {
+      "id": "usr_ananya",
+      "name": "Prof. Ananya Roy",
+      "email": "ananya.r@igdtuw.ac.in",
+      "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ananya+Roy&backgroundColor=db2777",
+      "designation": "Assistant Professor",
+      "department": "Mechanical & Automation Engineering",
+      "employee_id": "IGDTUW-MAE-402",
+      "cabin": "MAE Block, Room 108",
+      "role": "faculty",
+      "onboarded": true,
+      "gcal_connected": true
+    }
+  ],
+  "timetables": [
+    {
+      "id": "tt_1",
+      "user_id": "usr_sharma",
+      "day": "Monday",
+      "time_slot": "09:00 - 10:00",
+      "subject": "BCS-301 Operating Systems",
+      "room": "LH-2",
+      "type": "lecture",
+      "is_free": false
+    },
+    {
+      "id": "tt_2",
+      "user_id": "usr_sharma",
+      "day": "Monday",
+      "time_slot": "10:00 - 11:00",
+      "subject": "Free / Office Hours",
+      "room": "Cabin 302",
+      "type": "free",
+      "is_free": true
+    },
+    {
+      "id": "tt_3",
+      "user_id": "usr_sharma",
+      "day": "Monday",
+      "time_slot": "11:00 - 12:00",
+      "subject": "BCS-301 OS Lab",
+      "room": "Computing Lab 4",
+      "type": "lab",
+      "is_free": false
+    },
+    {
+      "id": "tt_4",
+      "user_id": "usr_sharma",
+      "day": "Tuesday",
+      "time_slot": "10:00 - 11:00",
+      "subject": "MCS-102 Advanced Algorithms",
+      "room": "PG Room 1",
+      "type": "lecture",
+      "is_free": false
+    },
+    {
+      "id": "tt_5",
+      "user_id": "usr_sharma",
+      "day": "Tuesday",
+      "time_slot": "14:00 - 15:00",
+      "subject": "Free / Research Slot",
+      "room": "Cabin 302",
+      "type": "free",
+      "is_free": true
+    },
+    {
+      "id": "tt_6",
+      "user_id": "usr_sharma",
+      "day": "Friday",
+      "time_slot": "09:00 - 10:00",
+      "subject": "Free / Consultation",
+      "room": "Cabin 302",
+      "type": "free",
+      "is_free": true
+    },
+    {
+      "id": "tt_7",
+      "user_id": "usr_sharma",
+      "day": "Friday",
+      "time_slot": "10:00 - 11:00",
+      "subject": "Free / Meeting Slot",
+      "room": "Cabin 302",
+      "type": "free",
+      "is_free": true
+    },
+    {
+      "id": "tt_8",
+      "user_id": "usr_sharma",
+      "day": "Friday",
+      "time_slot": "11:00 - 12:00",
+      "subject": "BCS-301 OS Lab",
+      "room": "CL-4",
+      "type": "lab",
+      "is_free": false
+    },
+    {
+      "id": "tt_9",
+      "user_id": "usr_sharma",
+      "day": "Friday",
+      "time_slot": "14:00 - 15:00",
+      "subject": "BCS-504 AI & ML",
+      "room": "LH-1",
+      "type": "lecture",
+      "is_free": false
+    },
+    {
+      "id": "tt_10",
+      "user_id": "usr_sneha",
+      "day": "Friday",
+      "time_slot": "09:00 - 10:00",
+      "subject": "Free / Office Hours",
+      "room": "Room 112",
+      "type": "free",
+      "is_free": true
+    },
+    {
+      "id": "tt_11",
+      "user_id": "usr_sneha",
+      "day": "Friday",
+      "time_slot": "10:00 - 11:00",
+      "subject": "Free / Dept Sync",
+      "room": "Room 112",
+      "type": "free",
+      "is_free": true
+    },
+    {
+      "id": "tt_12",
+      "user_id": "usr_sneha",
+      "day": "Friday",
+      "time_slot": "11:00 - 12:00",
+      "subject": "BIT-202 Discrete Mathematics",
+      "room": "LH-3",
+      "type": "lecture",
+      "is_free": false
+    },
+    {
+      "id": "tt_13",
+      "user_id": "usr_sneha",
+      "day": "Friday",
+      "time_slot": "14:00 - 15:00",
+      "subject": "Free / Office Hours",
+      "room": "Room 112",
+      "type": "free",
+      "is_free": true
+    },
+    {
+      "id": "tt_14",
+      "user_id": "usr_manpreet",
+      "day": "Friday",
+      "time_slot": "09:00 - 10:00",
+      "subject": "Free / Prep",
+      "room": "Room 205",
+      "type": "free",
+      "is_free": true
+    },
+    {
+      "id": "tt_15",
+      "user_id": "usr_manpreet",
+      "day": "Friday",
+      "time_slot": "10:00 - 11:00",
+      "subject": "Free / Dept Sync",
+      "room": "Room 205",
+      "type": "free",
+      "is_free": true
+    },
+    {
+      "id": "tt_16",
+      "user_id": "usr_manpreet",
+      "day": "Friday",
+      "time_slot": "11:00 - 12:00",
+      "subject": "Free / Lab Prep",
+      "room": "Room 205",
+      "type": "free",
+      "is_free": true
+    },
+    {
+      "id": "tt_17",
+      "user_id": "usr_manpreet",
+      "day": "Friday",
+      "time_slot": "14:00 - 15:00",
+      "subject": "Free / Mentoring",
+      "room": "Room 205",
+      "type": "free",
+      "is_free": true
+    },
+    {
+      "id": "tt_18",
+      "user_id": "usr_manpreet",
+      "day": "Friday",
+      "time_slot": "15:00 - 16:00",
+      "subject": "BEC-305 Digital Circuits Lab",
+      "room": "Hardware Lab 1",
+      "type": "lab",
+      "is_free": false
+    }
+  ],
+  "calendar_events": [
+    {
+      "id": "cal_1",
+      "user_id": "usr_sharma",
+      "title": "Google Calendar: PhD Scholar Progress Review",
+      "date": "2026-09-15",
+      "start_time": "11:00",
+      "end_time": "12:00",
+      "source": "google_calendar"
+    },
+    {
+      "id": "cal_2",
+      "user_id": "usr_sneha",
+      "title": "Google Calendar: External Examiner Coordination Call",
+      "date": "2026-09-15",
+      "start_time": "13:00",
+      "end_time": "14:00",
+      "source": "google_calendar"
+    }
+  ],
+  "meetings": [
+    {
+      "id": "mtg_101",
+      "title": "IGDTUW Curriculum & NAAC Criteria Review",
+      "description": "Restructuring of CS-301 lab assignments and reviewing SSR Metric 2.3 for NAAC Accreditation.",
+      "date": "2026-09-15",
+      "start_time": "10:00",
+      "end_time": "11:00",
+      "duration_minutes": 60,
+      "location": "Senate Committee Room (Admin Block, 2nd Floor)",
+      "gmeet_link": "https://meet.google.com/igdtuw-naac-rev",
+      "organizer_id": "usr_sharma",
+      "status": "scheduled",
+      "participants": [
+        {
+          "user_id": "usr_sharma",
+          "status": "accepted"
+        },
+        {
+          "user_id": "usr_sneha",
+          "status": "accepted"
+        },
+        {
+          "user_id": "usr_manpreet",
+          "status": "accepted"
+        },
+        {
+          "user_id": "usr_ananya",
+          "status": "accepted"
+        }
+      ]
+    },
+    {
+      "id": "mtg_102",
+      "title": "Academic Council Monthly Review",
+      "description": "Review of end-semester examination timetables and moderation guidelines.",
+      "date": "2026-09-18",
+      "start_time": "11:00",
+      "end_time": "12:30",
+      "duration_minutes": 90,
+      "location": "Main Auditorium Boardroom",
+      "gmeet_link": "https://meet.google.com/igdtuw-council-sep",
+      "organizer_id": "usr_arun",
+      "status": "scheduled",
+      "participants": [
+        {
+          "user_id": "usr_arun",
+          "status": "accepted"
+        },
+        {
+          "user_id": "usr_aditya",
+          "status": "accepted"
+        },
+        {
+          "user_id": "usr_sharma",
+          "status": "accepted"
+        }
+      ]
+    }
+  ],
+  "moms": [
+    {
+      "id": "mom_201",
+      "meeting_id": "mtg_101",
+      "reference_no": "IGDTUW/CSE/2026/MOM-0915",
+      "title": "Minutes of Meeting: Curriculum & NAAC Criteria Review",
+      "date": "2026-09-15",
+      "time": "10:00 AM - 11:00 AM",
+      "venue": "Senate Committee Room & Google Meet",
+      "organizer_id": "usr_sharma",
+      "attendees": [
+        "Dr. Rajesh Sharma (HOD & Chair)",
+        "Dr. Sneha Kumar (IT)",
+        "Dr. Manpreet Singh (ECE)",
+        "Prof. Ananya Roy (MAE)"
+      ],
+      "absentees": [
+        "None (100% Quorum Achieved)"
+      ],
+      "agenda": [
+        "1. Restructuring of CS-301 Operating Systems lab assignments.",
+        "2. Review NAAC Metric 2.3 SSR documentation.",
+        "3. Finalization of dates for Industry Expert Seminar series."
+      ],
+      "discussion": "The Chair welcomed all faculty members. Dr. Sharma presented the draft syllabus for Operating Systems lab exercises, incorporating Unix shell scripting and Docker containerization. Dr. Sneha suggested aligning mathematical proofs in CS-402 with continuous internal evaluations.",
+      "decisions": [
+        "Unanimously approved the revised 10-week lab manual for CS-301.",
+        "Designated Dr. Sneha Kumar as Lead Coordinator for NAAC Metric 2.3 (Teaching-Learning Process).",
+        "Approved dates (October 12-14) for the Cloud Computing workshop series."
+      ],
+      "action_items": [
+        {
+          "task": "Upload finalized lab manuals to IGDTUW LMS portal",
+          "assignee": "Dr. Rajesh Sharma",
+          "deadline": "2026-09-22"
+        },
+        {
+          "task": "Compile student mentor lists for NAAC verification",
+          "assignee": "Dr. Sneha Kumar",
+          "deadline": "2026-09-25"
+        },
+        {
+          "task": "Confirm keynote speaker travel arrangements",
+          "assignee": "Dr. Manpreet Singh",
+          "deadline": "2026-09-28"
+        }
+      ],
+      "status": "pending_review",
+      "prepared_by": "AI Meeting Automation Engine",
+      "signed_by_admin": false
+    }
+  ],
+  "ai_logs": [
+    {
+      "id": "log_1789118345541",
+      "timestamp": "2026-09-11T09:19:05.541Z",
+      "task_name": "30-Minute Meeting Reminder Dispatch",
+      "meeting_id": "mtg_102",
+      "action_taken": "Dispatched automated push reminder & Google Calendar alert to 3 faculty participants for 'Academic Council Monthly Review'.",
+      "status": "success",
+      "latency_ms": 21
+    },
+    {
+      "id": "log_1",
+      "timestamp": "2026-09-11T09:19:05.439Z",
+      "task_name": "30-Minute Meeting Reminder Dispatch",
+      "meeting_id": "mtg_101",
+      "action_taken": "Autonomous push notification & Google Calendar trigger sent to 4 IGDTUW faculty members.",
+      "status": "success",
+      "latency_ms": 14
+    },
+    {
+      "id": "log_2",
+      "timestamp": "2026-09-11T08:19:05.441Z",
+      "task_name": "MoM Institutional Template Structuring",
+      "meeting_id": "mtg_101",
+      "action_taken": "Generated university format MoM containing verified attendance, agenda, and action items.",
+      "status": "success",
+      "latency_ms": 22
+    },
+    {
+      "id": "log_3",
+      "timestamp": "2026-09-11T07:19:05.441Z",
+      "task_name": "Timetable Collision Watchdog Check",
+      "meeting_id": "mtg_101",
+      "action_taken": "Verified zero collisions across all 4 faculty timetables and Google Calendar feeds.",
+      "status": "success",
+      "latency_ms": 9
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif_1789118345541",
+      "user_id": "usr_arun",
+      "type": "reminder",
+      "title": "Meeting in 30 mins: Academic Council Monthly Review",
+      "message": "Your meeting starts at 11:00 in Main Auditorium Boardroom. Google Meet room is active.",
+      "link": "meeting_details",
+      "read": false,
+      "created_at": "2026-09-11T09:19:05.541Z"
+    },
+    {
+      "id": "notif_1",
+      "user_id": "usr_sharma",
+      "type": "reminder",
+      "title": "Staff Meeting starts in 30 minutes",
+      "message": "IGDTUW Curriculum & NAAC Criteria Review starts at 10:00 AM in Senate Committee Room and Google Meet.",
+      "link": "meeting_details",
+      "read": false,
+      "created_at": "2026-09-11T09:19:05.441Z"
+    },
+    {
+      "id": "notif_2",
+      "user_id": "usr_sharma",
+      "type": "mom",
+      "title": "MoM Draft Ready for Review",
+      "message": "AI has structured the Minutes of Meeting for 'Curriculum & NAAC Review'. Please review and sign off.",
+      "link": "mom",
+      "read": false,
+      "created_at": "2026-09-11T08:19:05.441Z"
+    }
+  ]
+}

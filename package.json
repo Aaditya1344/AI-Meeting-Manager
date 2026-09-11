@@ -1,0 +1,25 @@
+﻿{
+  "name": "ai-meeting-manager",
+  "version": "1.0.0",
+  "description": "AI-Powered Institutional Staff Meeting Organizer for Indira Gandhi Delhi Technical University (IGDTUW)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "igdtuw",
+    "meeting-manager",
+    "ai-scheduling",
+    "timetable-sync",
+    "google-calendar"
+  ],
+  "author": "IGDTUW Academic Computing",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}

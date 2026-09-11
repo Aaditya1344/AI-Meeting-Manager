@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IGDTUW — AI Institutional Staff Meeting Organizer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased h-screen overflow-hidden flex flex-col">
+
+  <!-- Top App Navigation / IGDTUW Institution Bar -->
+  <header class="bg-white border-b border-slate-200 h-14 px-4 flex items-center justify-between shrink-0 z-30">
+    <div class="flex items-center gap-3">
+      <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-600 text-white font-bold text-lg shadow-sm">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-slate-900 tracking-tight text-base">IGDTUW Sync</span>
+          <span class="text-[10px] font-semibold tracking-wide bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200">INSTITUTIONAL v2.4</span>
+        </div>
+        <p class="text-[11px] text-slate-500 font-medium">Indira Gandhi Delhi Technical University • Academic Meeting Portal</p>
+      </div>
+    </div>
+
+    <!-- Role Switcher & Google Account Controls -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs">
+        <span class="px-2 font-medium text-slate-500">Google Account:</span>
+        <button onclick="switchUser('usr_aditya')" id="role-btn-aditya" class="px-2 py-1 rounded text-xs font-medium text-purple-700 hover:bg-white transition" title="Aditya (System Admin)">👑 Aditya (Admin)</button>
+        <button onclick="switchUser('usr_arun')" id="role-btn-arun" class="px-2 py-1 rounded text-xs font-medium text-purple-700 hover:bg-white transition" title="Arun (Dean / Admin)">👑 Arun (Admin)</button>
+        <button onclick="switchUser('usr_sharma')" id="role-btn-organizer" class="px-2 py-1 rounded text-xs font-bold text-slate-900 bg-white shadow-xs transition">Dr. Sharma (HOD)</button>
+        <button onclick="switchUser('usr_sneha')" id="role-btn-faculty" class="px-2 py-1 rounded text-xs font-medium text-slate-600 hover:text-slate-900 transition">Dr. Sneha (Faculty)</button>
+      </div>
+
+      <div class="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-xs text-emerald-800 font-medium">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>G-Cal & Timetable Synced</span>
+      </div>
+
+      <button onclick="navigateTo('notifications')" class="relative p-2 text-slate-600 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition" title="Notifications">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+        </svg>
+        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full"></span>
+      </button>
+
+      <button onclick="navigateTo('create-meeting')" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        <span>Create Meeting</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="flex flex-1 overflow-hidden">
+    <!-- Left Sidebar -->
+    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 select-none">
+      <div class="p-3 overflow-y-auto space-y-1">
+        <div class="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">Core Workspace</div>
+        
+        <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+          <span>Dashboard</span>
+        </button>
+        <button onclick="navigateTo('calendar')" id="nav-calendar" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          <span>Calendar</span>
+        </button>
+        <button onclick="navigateTo('create-meeting')" id="nav-create-meeting" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span>Create Meeting</span>
+          <span class="ml-auto text-[10px] bg-indigo-100 text-indigo-700 font-semibold px-1.5 py-0.5 rounded">Smart</span>
+        </button>
+        <button onclick="navigateTo('my-meetings')" id="nav-my-meetings" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          <span>My Meetings</span>
+        </button>
+        <button onclick="navigateTo('staff')" id="nav-staff" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+          <span>Staff Directory</span>
+        </button>
+
+        <div class="px-3 pt-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">Sync & Records</div>
+        <button onclick="navigateTo('timetable')" id="nav-timetable" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+          <span>Timetable & Upload</span>
+          <span class="ml-auto text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-semibold">PDF/Pic</span>
+        </button>
+        <button onclick="navigateTo('google-sync')" id="nav-google-sync" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+          <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>
+          <span>Google Sync</span>
+        </button>
+        <button onclick="navigateTo('mom')" id="nav-mom" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <span>Minutes of Meeting</span>
+          <span class="ml-auto text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">MoM</span>
+        </button>
+        <button onclick="navigateTo('ai-activity')" id="nav-ai-activity" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+          <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          <span>AI Activity</span>
+          <span class="ml-auto text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 rounded font-mono-code font-semibold">Daemon</span>
+        </button>
+        <button onclick="navigateTo('notifications')" id="nav-notifications" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+          <span>Notifications</span>
+        </button>
+
+        <div id="admin-nav-group" class="pt-2">
+          <div class="px-3 pt-2 py-1 text-[11px] font-bold uppercase tracking-wider text-purple-600 flex items-center justify-between">
+            <span>Admin Control Panel</span>
+            <span class="text-[9px] bg-purple-100 text-purple-800 px-1 rounded font-mono-code">Aditya / Arun</span>
+          </div>
+          <button onclick="navigateTo('admin')" id="nav-admin" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-purple-800 bg-purple-50/60 hover:bg-purple-100 transition border border-purple-200">
+            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <span>University Admin Center</span>
+          </button>
+        </div>
+
+        <button onclick="navigateTo('settings')" id="nav-settings" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+          <span>Settings & Config</span>
+        </button>
+      </div>
+
+      <div class="p-3 border-t border-slate-200 bg-slate-50/70">
+        <div class="flex items-center gap-3">
+          <div id="user-avatar" class="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xs">RS</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold text-slate-900 truncate" id="user-display-name">Dr. Rajesh Sharma</p>
+            <p class="text-[11px] text-slate-500 truncate" id="user-display-role">HOD • CSE Department</p>
+            <p class="text-[10px] text-emerald-600 font-mono-code truncate" id="user-display-email">r.sharma@igdtuw.ac.in</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Dynamic Views -->
+    <main class="flex-1 bg-slate-50 overflow-y-auto relative" id="main-content-canvas">
+
+      <!-- SCREEN 1: LOGIN -->
+      <section id="screen-login" class="hidden min-h-full flex items-center justify-center p-6 bg-gradient-to-br from-slate-100 via-white to-indigo-50/30">
+        <div class="max-w-md w-full bg-white rounded-2xl border border-slate-200 shadow-xl p-8 text-center space-y-6">
+          <div class="mx-auto w-14 h-14 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-md text-2xl font-bold">🎓</div>
+          <div>
+            <h2 class="text-2xl font-bold text-slate-900 tracking-tight">IGDTUW Sync Portal</h2>
+            <p class="text-xs font-bold text-indigo-700 mt-1 uppercase tracking-wider">Indira Gandhi Delhi Technical University</p>
+            <p class="text-slate-500 text-sm mt-3 leading-relaxed">
+              Smart meeting scheduling for your institution. Combines faculty teaching timetables with real-time Google Calendar availability.
+            </p>
+          </div>
+          <div class="space-y-2 pt-2">
+            <p class="text-xs font-semibold text-slate-500">Select Google Workspace Account:</p>
+            <button onclick="switchUser('usr_aditya'); navigateTo('dashboard')" class="w-full flex items-center justify-between p-3 rounded-xl border border-purple-200 bg-purple-50/40 hover:bg-purple-50 transition text-xs">
+              <span class="font-bold text-slate-900">Aditya (System Admin)</span>
+              <span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded">ADMIN</span>
+            </button>
+            <button onclick="switchUser('usr_arun'); navigateTo('dashboard')" class="w-full flex items-center justify-between p-3 rounded-xl border border-purple-200 bg-purple-50/40 hover:bg-purple-50 transition text-xs">
+              <span class="font-bold text-slate-900">Arun (Dean of Academic Affairs)</span>
+              <span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded">ADMIN</span>
+            </button>
+            <button onclick="switchUser('usr_sharma'); navigateTo('dashboard')" class="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition text-xs">
+              <span class="font-bold text-slate-900">Dr. Rajesh Sharma (HOD • CSE)</span>
+              <span class="text-[10px] bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded">ORGANIZER</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: DASHBOARD -->
+      <section id="screen-dashboard" class="p-6 space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-xl font-bold text-slate-900 tracking-tight">Indira Gandhi Delhi Technical University</h1>
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">IGDTUW Portal</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Semester I Active Schedule • Synchronized with Google Workspace</p>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <button onclick="navigateTo('timetable')" class="px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">Upload Timetable (PDF / Pic)</button>
+            <button onclick="navigateTo('create-meeting')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-xs transition">Schedule Staff Meeting</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+            <p class="text-xs font-semibold text-slate-500 uppercase">Meetings Today</p>
+            <p class="text-2xl font-extrabold text-slate-900 mt-1">1</p>
+            <p class="text-[11px] text-indigo-600 font-medium mt-0.5">Curriculum Review @ 10:00 AM</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+            <p class="text-xs font-semibold text-slate-500 uppercase">Upcoming Meetings</p>
+            <p class="text-2xl font-extrabold text-slate-900 mt-1" id="dash-upcoming-count">2</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">Across this & next week</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+            <p class="text-xs font-semibold text-slate-500 uppercase">Pending MoM</p>
+            <p class="text-2xl font-extrabold text-amber-600 mt-1">1</p>
+            <p class="text-[11px] text-amber-700 mt-0.5">AI draft ready for sign-off</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+            <p class="text-xs font-semibold text-slate-500 uppercase">Available Faculty</p>
+            <p class="text-2xl font-extrabold text-emerald-600 mt-1">6 / 6</p>
+            <p class="text-[11px] text-emerald-700 mt-0.5">100% G-Cal Synced</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: TIMETABLE & UPLOAD (PDF / PICTURE) -->
+      <section id="screen-timetable" class="hidden p-6 space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">IGDTUW Timetable Management</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Upload your weekly teaching schedule via PDF or Picture, or manage slots manually.</p>
+          </div>
+          <button onclick="document.getElementById('tt-file-input').click()" class="px-3.5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition shadow-xs">
+            Upload PDF / Timetable Picture
+          </button>
+          <input type="file" id="tt-file-input" class="hidden" accept=".pdf,.png,.jpg,.jpeg,.webp,.csv,.xlsx" onchange="handleTimetableFileUpload(this)">
+        </div>
+
+        <div class="border-2 border-dashed border-indigo-200 bg-indigo-50/30 rounded-2xl p-6 text-center cursor-pointer hover:bg-indigo-50/50 transition" onclick="document.getElementById('tt-file-input').click()">
+          <div class="mx-auto w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl font-bold mb-2">📄</div>
+          <h3 class="text-sm font-bold text-slate-900">Upload Your Timetable (PDF or Picture)</h3>
+          <p class="text-xs text-slate-500 mt-1">Supported Formats: PDF documents, Timetable photos (PNG, JPG, JPEG), Excel, CSV</p>
+          <p class="text-[11px] text-indigo-600 font-semibold mt-1">AI OCR Engine will automatically extract lecture hours, lab periods, and room numbers.</p>
+        </div>
+
+        <div id="tt-upload-status" class="hidden"></div>
+        <div class="p-4 rounded-xl bg-white border border-slate-200 text-xs">
+          <span class="text-slate-400 font-semibold">Status:</span> <strong id="tt-total-entries" class="text-slate-900">18 Entries Loaded</strong> • Synced with availability engine.
+        </div>
+      </section>
+
+      <!-- SCREEN 6: CREATE MEETING 5-STEP WIZARD -->
+      <section id="screen-create-meeting" class="hidden p-6 space-y-6">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-slate-900">Schedule New Staff Meeting</h2>
+            <span class="text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full">Step <span id="step-number-indicator">1</span> of 5</span>
+          </div>
+
+          <div class="grid grid-cols-5 gap-2 pt-2">
+            <div id="step-pill-1" class="border-t-4 border-indigo-600 pt-1 text-[11px] font-bold text-indigo-700">1. Details</div>
+            <div id="step-pill-2" class="border-t-4 border-slate-200 pt-1 text-[11px] font-bold text-slate-400">2. Staff Select</div>
+            <div id="step-pill-3" class="border-t-4 border-slate-200 pt-1 text-[11px] font-bold text-slate-400">3. Availability Grid</div>
+            <div id="step-pill-4" class="border-t-4 border-slate-200 pt-1 text-[11px] font-bold text-slate-400">4. Best Slots</div>
+            <div id="step-pill-5" class="border-t-4 border-slate-200 pt-1 text-[11px] font-bold text-slate-400">5. Confirm</div>
+          </div>
+        </div>
+
+        <!-- Step 1 -->
+        <div id="wizard-step-1" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+          <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Step 1 — Meeting Details & Agenda</h3>
+          <div class="grid grid-cols-2 gap-4 text-xs">
+            <div class="col-span-2">
+              <label class="block font-bold text-slate-700 mb-1">Meeting Title *</label>
+              <input type="text" id="meet-title" value="IGDTUW Curriculum & NAAC Review" class="w-full p-2.5 rounded-xl border border-slate-300 font-medium">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Meeting Date *</label>
+              <input type="date" id="meet-date" value="2026-09-15" class="w-full p-2.5 rounded-xl border border-slate-300">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Target Start Time</label>
+              <input type="time" id="meet-time" value="10:00" class="w-full p-2.5 rounded-xl border border-slate-300">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Duration</label>
+              <select id="meet-duration" class="w-full p-2.5 rounded-xl border border-slate-300">
+                <option value="60" selected>60 minutes</option>
+                <option value="90">90 minutes</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Venue / Room</label>
+              <input type="text" id="meet-location" value="Senate Committee Room" class="w-full p-2.5 rounded-xl border border-slate-300">
+            </div>
+            <div class="col-span-2">
+              <label class="block font-bold text-slate-700 mb-1">Agenda</label>
+              <textarea id="meet-agenda" rows="2" class="w-full p-2.5 rounded-xl border border-slate-300">1. OS lab restructuring&#10;2. NAAC Metric 2.3 SSR review</textarea>
+            </div>
+          </div>
+          <div class="flex justify-end pt-3 border-t border-slate-100">
+            <button onclick="goToWizardStep(2)" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold">Next: Select Staff &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div id="wizard-step-2" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+          <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Step 2 — Select Faculty Members</h3>
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div class="p-3 rounded-xl border-2 border-indigo-500 bg-indigo-50/20 font-bold">Dr. Rajesh Sharma (HOD • CSE)</div>
+            <div class="p-3 rounded-xl border-2 border-indigo-500 bg-indigo-50/20 font-bold">Dr. Sneha Kumar (IT)</div>
+            <div class="p-3 rounded-xl border-2 border-indigo-500 bg-indigo-50/20 font-bold">Dr. Manpreet Singh (ECE)</div>
+            <div class="p-3 rounded-xl border-2 border-indigo-500 bg-indigo-50/20 font-bold">Prof. Ananya Roy (MAE)</div>
+          </div>
+          <div class="flex justify-between pt-3 border-t border-slate-100">
+            <button onclick="goToWizardStep(1)" class="px-4 py-2 text-xs font-semibold">&larr; Back</button>
+            <button onclick="goToWizardStep(3)" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold">Next: Check Availability &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div id="wizard-step-3" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+          <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Step 3 — Selected Staff Availability Matrix</h3>
+          <div id="availability-matrix-container" class="border border-slate-200 rounded-xl overflow-hidden"></div>
+          <div class="flex justify-between pt-3 border-t border-slate-100">
+            <button onclick="goToWizardStep(2)" class="px-4 py-2 text-xs font-semibold">&larr; Back</button>
+            <button onclick="goToWizardStep(4)" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold">View Recommended Slots &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div id="wizard-step-4" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+          <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Step 4 — Recommended Slots</h3>
+          <div id="recommendations-list-container" class="space-y-3"></div>
+          <div class="flex justify-between pt-3 border-t border-slate-100">
+            <button onclick="goToWizardStep(3)" class="px-4 py-2 text-xs font-semibold">&larr; Back</button>
+            <button onclick="goToWizardStep(5)" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold">Next: Confirm &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div id="wizard-step-5" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+          <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Step 5 — Final Confirmation</h3>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2">
+            <p><strong id="summary-title">IGDTUW Meeting</strong></p>
+            <p>Date: <span id="summary-date"></span> • Venue: <span id="summary-venue"></span> • Duration: <span id="summary-duration"></span></p>
+          </div>
+          <div class="flex justify-between pt-3 border-t border-slate-100">
+            <button onclick="goToWizardStep(4)" class="px-4 py-2 text-xs font-semibold">&larr; Back</button>
+            <button onclick="finalizeAndScheduleMeeting()" class="bg-emerald-600 text-white px-6 py-3 rounded-xl text-xs font-extrabold">Confirm & Schedule Meeting</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 8: MY MEETINGS -->
+      <section id="screen-my-meetings" class="hidden p-6 space-y-6">
+        <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+          <h2 class="text-lg font-bold text-slate-900">My Institutional Meetings</h2>
+          <button onclick="navigateTo('create-meeting')" class="bg-indigo-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold">+ Schedule Meeting</button>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="p-3">Meeting Title</th>
+                <th class="p-3">Date & Time</th>
+                <th class="p-3">Participants</th>
+                <th class="p-3">Location</th>
+                <th class="p-3">MoM Status</th>
+                <th class="p-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="my-meetings-tbody" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SCREEN 10: AI ACTIVITY -->
+      <section id="screen-ai-activity" class="hidden p-6 space-y-6">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <h2 class="text-lg font-bold text-slate-900 pb-2 border-b border-slate-100">AI Background Automation Logs</h2>
+          <table class="w-full text-xs text-left mt-4">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="p-3">Time</th>
+                <th class="p-3">Automated Task</th>
+                <th class="p-3">Target</th>
+                <th class="p-3">Action Executed</th>
+                <th class="p-3">Status</th>
+              </tr>
+            </thead>
+            <tbody id="ai-logs-table-body" class="divide-y divide-slate-100 font-mono-code text-[11px]"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SCREEN 11: MoM HUB -->
+      <section id="screen-mom" class="hidden p-6 space-y-6">
+        <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+          <h2 class="text-lg font-bold text-slate-900">Minutes of Meeting (MoM) Management</h2>
+        </div>
+        <div id="mom-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </section>
+
+      <!-- SCREEN 12: MoM EDITOR -->
+      <section id="screen-mom-editor" class="hidden p-6 space-y-6">
+        <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+          <button onclick="navigateTo('mom')" class="text-slate-500 font-bold">&larr; Back</button>
+          <h2 class="text-base font-bold text-slate-900">Official IGDTUW MoM Document Editor</h2>
+          <button onclick="alert('MoM approved and officially recorded!')" class="px-4 py-1.5 text-xs font-bold text-white bg-emerald-600 rounded-lg">Approve & Sign</button>
+        </div>
+        <div class="max-w-4xl mx-auto bg-white border border-slate-300 rounded-2xl shadow-md p-10 space-y-6 text-slate-800 text-xs">
+          <div class="text-center border-b-2 border-slate-900 pb-4">
+            <h1 class="text-lg font-extrabold uppercase text-slate-900">Indira Gandhi Delhi Technical University</h1>
+            <p class="font-bold text-indigo-700">Official Minutes of Meeting (MoM)</p>
+          </div>
+          <div class="space-y-2">
+            <h3 class="font-bold uppercase bg-slate-100 p-2 rounded">Summary of Discussion</h3>
+            <div contenteditable="true" class="p-3 rounded border border-slate-200">Deliberations held on OS lab manuals for Semester 1.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 13: STAFF DIRECTORY -->
+      <section id="screen-staff" class="hidden p-6 space-y-6">
+        <h2 class="text-lg font-bold text-slate-900">IGDTUW Faculty & Staff Directory</h2>
+        <div id="staff-grid-container" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+      </section>
+
+      <!-- SCREEN 14: ADMIN CONTROL PANEL (GATED FOR ADITYA & ARUN) -->
+      <section id="screen-admin" class="hidden p-6 space-y-6">
+        <div class="flex items-center justify-between bg-white p-5 rounded-2xl border border-purple-200 shadow-xs">
+          <div>
+            <h2 class="text-lg font-bold text-purple-950">IGDTUW Admin Control Panel</h2>
+            <p class="text-xs text-slate-500">Authorized Access for Aditya & Arun</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-4 gap-4">
+          <div class="bg-white p-4 rounded-xl border border-slate-200"><span class="text-slate-400 text-xs font-semibold">Total Staff</span><p class="text-2xl font-black" id="admin-total-staff">128</p></div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200"><span class="text-slate-400 text-xs font-semibold">G-Cal Synced</span><p class="text-2xl font-black text-emerald-600" id="admin-gcal-pct">94%</p></div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200"><span class="text-slate-400 text-xs font-semibold">Timetable Upload Rate</span><p class="text-2xl font-black text-indigo-600" id="admin-tt-pct">100%</p></div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200"><span class="text-slate-400 text-xs font-semibold">Meetings</span><p class="text-2xl font-black" id="admin-mtgs-count">344</p></div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5">
+          <h3 class="text-sm font-bold text-slate-900 mb-3">Faculty Role Management</h3>
+          <table class="w-full text-xs text-left">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+              <tr><th class="p-3">Staff Name</th><th class="p-3">Department</th><th class="p-3">Role</th><th class="p-3">Actions</th></tr>
+            </thead>
+            <tbody id="admin-staff-table-body" class="divide-y divide-slate-100 font-medium"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SCREEN 15: SETTINGS -->
+      <section id="screen-settings" class="hidden p-6 space-y-6">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 text-xs space-y-4">
+          <h2 class="text-lg font-bold text-slate-900 border-b pb-2">Institutional Settings</h2>
+          <label class="flex items-center gap-2"><input type="checkbox" checked> 30-Minute Push Reminders</label>
+          <label class="flex items-center gap-2"><input type="checkbox" checked> Auto-MoM Generation on Meeting End</label>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: CALENDAR -->
+      <section id="screen-calendar" class="hidden p-6 space-y-6">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 text-xs text-slate-600">Combined Calendar View Synchronized with Google Workspace.</div>
+      </section>
+
+      <!-- SCREEN 5: GOOGLE SYNC -->
+      <section id="screen-google-sync" class="hidden p-6 space-y-6">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 text-xs">
+          <h2 class="text-base font-bold text-slate-900">Google Calendar Synchronization</h2>
+          <p class="text-emerald-700 font-bold mt-1">Connected to Google Workspace OAuth 2.0 ✓</p>
+        </div>
+      </section>
+
+      <!-- SCREEN 9: NOTIFICATIONS -->
+      <section id="screen-notifications" class="hidden p-6 space-y-6">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 text-xs">
+          <h2 class="text-base font-bold text-slate-900 mb-2">Notifications</h2>
+          <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-indigo-900 font-medium">🔔 Meeting in 30 mins: IGDTUW Curriculum Review at 10:00 AM.</div>
+        </div>
+      </section>
+
+      <!-- SCREEN 7: MEETING DETAILS -->
+      <section id="screen-meeting-details" class="hidden p-6 space-y-6">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 text-xs">
+          <h2 class="text-lg font-bold text-slate-900 mb-2">Meeting Record: IGDTUW Curriculum & NAAC Review</h2>
+          <p class="text-slate-600">Location: Senate Committee Room • Date: 15 Sept 2026, 10:00 AM</p>
+          <button onclick="navigateTo('mom-editor')" class="mt-3 bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold">Open Pre-filled MoM Template</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ONBOARDING MODAL -->
+  <div id="onboarding-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-5">
+      <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">🎓</div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Complete Your Faculty Profile</h3>
+          <p class="text-xs text-slate-500">Please provide your institutional designation at IGDTUW.</p>
+        </div>
+      </div>
+      <form id="onboarding-form" class="space-y-4 text-xs">
+        <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <div>
+            <label class="block text-slate-400 font-semibold text-[10px]">NAME (FROM GOOGLE)</label>
+            <input type="text" id="onboard-name" readonly class="w-full bg-transparent font-bold text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-semibold text-[10px]">EMAIL (FROM GOOGLE)</label>
+            <input type="text" id="onboard-email" readonly class="w-full bg-transparent font-bold text-slate-800 focus:outline-none">
+          </div>
+        </div>
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-700">Official Designation *</label>
+          <select id="onboard-designation" class="w-full p-2.5 rounded-xl border border-slate-300 font-medium">
+            <option value="Professor & HOD">Professor & Head of Department (HOD)</option>
+            <option value="Professor">Professor</option>
+            <option value="Associate Professor" selected>Associate Professor</option>
+            <option value="Assistant Professor">Assistant Professor</option>
+            <option value="Dean of Academic Affairs">Dean of Academic Affairs</option>
+            <option value="Director / System Administrator">Director / System Administrator</option>
+          </select>
+        </div>
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-700">Academic Department *</label>
+          <select id="onboard-department" class="w-full p-2.5 rounded-xl border border-slate-300 font-medium">
+            <option value="Computer Science & Engineering" selected>Computer Science & Engineering (CSE)</option>
+            <option value="Information Technology">Information Technology (IT)</option>
+            <option value="Electronics & Communication Engineering">Electronics & Communication Engineering (ECE)</option>
+            <option value="Mechanical & Automation Engineering">Mechanical & Automation Engineering (MAE)</option>
+            <option value="Academic Administration">Academic Administration</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block font-bold text-slate-700 mb-1">Employee ID</label><input type="text" id="onboard-empid" placeholder="IGDTUW-CSE-104" class="w-full p-2.5 rounded-xl border border-slate-300"></div>
+          <div><label class="block font-bold text-slate-700 mb-1">Cabin / Room Number</label><input type="text" id="onboard-cabin" placeholder="Room 302, CSE Block" class="w-full p-2.5 rounded-xl border border-slate-300"></div>
+        </div>
+        <div class="pt-3 border-t border-slate-100 flex justify-end">
+          <button type="submit" class="bg-indigo-600 text-white font-bold py-2.5 px-5 rounded-xl">Save & Continue &rarr;</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
