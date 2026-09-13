@@ -28,4 +28,28 @@ body {
 .modal-backdrop {
   background-color: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Mobile responsive drawer animations & safe areas */
+@media (max-width: 767px) {
+  #app-sidebar {
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  #app-sidebar.-translate-x-full {
+    transform: translateX(-100%);
+  }
+  #app-sidebar:not(.-translate-x-full) {
+    transform: translateX(0);
+  }
+}
+
+/* Touch-friendly scrolling */
+.overflow-x-auto, .overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile input touch fixes */
+input, select, textarea, button {
+  touch-action: manipulation;
 }

@@ -43,7 +43,7 @@ function requireAdmin(req, res, next) {
   }
 
   return res.status(403).json({
-    error: 'Access Denied: Institutional Admin privileges are restricted to authorized administrators (Aditya & Arun).',
+    error: 'Access Denied: Institutional Admin privileges are restricted to authorized administrators.',
     requiredRole: 'admin',
     userRole: user.role
   });

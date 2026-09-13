@@ -129,8 +129,8 @@ const GOOGLE_ACCOUNTS = [
   { name: 'Dr. Rajesh Sharma', email: 'r.sharma@igdtuw.ac.in', designation: 'Professor & HOD (CSE)', avatar: 'RS' },
   { name: 'Dr. Preeti Sehrawat', email: 'preeti.s@igdtuw.ac.in', designation: 'Associate Professor & HOD (IT)', avatar: 'PS' },
   { name: 'Dr. Sneha Kapoor', email: 'sneha.k@igdtuw.ac.in', designation: 'Associate Professor (CSE)', avatar: 'SK' },
-  { name: 'Aditya (Admin)', email: 'aditya@igdtuw.ac.in', designation: 'University System Administrator', avatar: 'AD', isAdmin: true },
-  { name: 'Arun (Admin)', email: 'arun@igdtuw.ac.in', designation: 'Chief Technology Officer', avatar: 'AR', isAdmin: true }
+  { name: 'Dr. Aditya Verma', email: 'aditya@igdtuw.ac.in', designation: 'Director of IT & Systems', avatar: 'AV', isAdmin: true },
+  { name: 'Dr. Arun Kumar', email: 'arun@igdtuw.ac.in', designation: 'Dean of Academic Affairs', avatar: 'AK', isAdmin: true }
 ];
 
 let pendingGoogleAccount = null;
@@ -144,13 +144,12 @@ function handleGoogleLogin() {
 
   list.innerHTML = GOOGLE_ACCOUNTS.map(acc => `
     <button type="button" onclick="handleGoogleAccountSelection('${acc.email}', '${acc.name.replace(/'/g, "\\'")}', '${acc.avatar}', ${Boolean(acc.isAdmin)})" class="w-full flex items-center gap-3 p-3.5 hover:bg-slate-50 transition text-left group">
-      <div class="w-9 h-9 rounded-full ${acc.isAdmin ? 'bg-purple-600' : 'bg-slate-800'} text-white font-bold flex items-center justify-center text-xs group-hover:scale-105 transition shrink-0">
+      <div class="w-9 h-9 rounded-full bg-slate-800 text-white font-bold flex items-center justify-center text-xs group-hover:scale-105 transition shrink-0">
         ${acc.avatar}
       </div>
       <div class="flex-1 min-w-0">
-        <p class="font-bold text-slate-900 text-xs truncate flex items-center gap-1.5">
-          <span>${acc.name}</span>
-          ${acc.isAdmin ? '<span class="text-[9px] bg-purple-100 text-purple-800 font-extrabold px-1 rounded">ADMIN</span>' : ''}
+        <p class="font-bold text-slate-900 text-xs truncate">
+          ${acc.name}
         </p>
         <p class="text-[11px] text-slate-500 font-mono-code truncate">${acc.email}</p>
       </div>
@@ -159,6 +158,35 @@ function handleGoogleLogin() {
   `).join('');
 
   modal.classList.remove('hidden');
+}
+
+// Mobile Responsive Sidebar Controller
+function toggleMobileSidebar() {
+  const sidebar = document.getElementById('app-sidebar');
+  const backdrop = document.getElementById('mobile-sidebar-backdrop');
+  if (!sidebar || !backdrop) return;
+
+  const isClosed = sidebar.classList.contains('-translate-x-full');
+  if (isClosed) {
+    sidebar.classList.remove('hidden');
+    sidebar.classList.remove('-translate-x-full');
+    backdrop.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+  } else {
+    closeMobileSidebar();
+  }
+}
+
+function closeMobileSidebar() {
+  const sidebar = document.getElementById('app-sidebar');
+  const backdrop = document.getElementById('mobile-sidebar-backdrop');
+  if (sidebar) {
+    sidebar.classList.add('-translate-x-full');
+  }
+  if (backdrop) {
+    backdrop.classList.add('hidden');
+  }
+  document.body.classList.remove('overflow-hidden');
 }
 
 function switchGoogleModalStep(step) {
@@ -293,12 +321,15 @@ function logoutUser() {
 
 // Screen Navigation
 function navigateTo(screenId) {
+  // Auto-close mobile sidebar drawer on navigation
+  closeMobileSidebar();
+
   if (screenId === 'admin') {
     const isAdmin = currentUser && (currentUser.role === 'admin' || 
       currentUser.email.toLowerCase().includes('aditya') || 
       currentUser.email.toLowerCase().includes('arun'));
     if (!isAdmin) {
-      alert('Access Denied: The Admin Control Panel is strictly restricted to designated administrators (Aditya & Arun).');
+      alert('Access Denied: The Admin Control Panel is strictly restricted to authorized system administrators.');
       return;
     }
   }
@@ -321,9 +352,14 @@ function navigateTo(screenId) {
   // Sidebar visibility: Hide sidebar entirely on login screen
   const sidebar = document.getElementById('app-sidebar');
   const header = document.getElementById('app-header');
+  const backdrop = document.getElementById('mobile-sidebar-backdrop');
   if (screenId === 'login') {
-    if (sidebar) sidebar.classList.add('hidden');
+    if (sidebar) {
+      sidebar.classList.add('hidden');
+      sidebar.classList.add('-translate-x-full');
+    }
     if (header) header.classList.add('hidden');
+    if (backdrop) backdrop.classList.add('hidden');
   } else {
     if (sidebar) sidebar.classList.remove('hidden');
     if (header) header.classList.remove('hidden');
@@ -723,16 +759,26 @@ async function finalizeAndScheduleMeeting() {
 async function renderStaffDirectory() {
   const data = await API.getStaff();
   const container = document.getElementById('staff-grid-container');
-  container.innerHTML = data.users.map(u => `
-    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 hover:border-indigo-300 transition">
+  if (!container) return;
+
+  // Filter: Never expose other administrators to the logged in user or admin
+  const visibleStaff = (data.users || []).filter(u => {
+    if (u.role === 'admin' && currentUser && u.id !== currentUser.id) {
+      return false;
+    }
+    return true;
+  });
+
+  container.innerHTML = visibleStaff.map(u => `
+    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 hover:border-indigo-300 transition">
       <div class="flex items-start gap-3">
-        <div class="w-11 h-11 rounded-xl bg-slate-800 text-white font-bold flex items-center justify-center text-sm">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-800 text-white font-bold flex items-center justify-center text-xs sm:text-sm shrink-0">
           ${u.name.split(' ').map(n=>n[0]).join('').substring(0,2)}
         </div>
         <div class="flex-1 min-w-0">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between gap-1">
             <h3 class="text-xs font-bold text-slate-900 truncate">${u.name}</h3>
-            <span class="badge-available px-2 py-0.5 rounded text-[10px] font-bold">${u.status_label}</span>
+            <span class="badge-available px-2 py-0.5 rounded text-[10px] font-bold shrink-0">${u.status_label || 'Available'}</span>
           </div>
           <p class="text-[11px] text-slate-500 truncate">${u.designation || 'Faculty'}</p>
           <p class="text-[10px] text-slate-400 font-mono-code truncate">${u.email}</p>
@@ -750,8 +796,10 @@ async function renderStaffDirectory() {
 async function renderMoMScreen() {
   const data = await API.getMoMs();
   const container = document.getElementById('mom-cards-container');
+  if (!container) return;
+
   container.innerHTML = data.moms.map(m => `
-    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4 hover:border-indigo-300 transition">
+    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4 hover:border-indigo-300 transition">
       <div class="flex items-start justify-between">
         <div>
           <span class="text-[10px] font-bold uppercase bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded">${m.status.toUpperCase()}</span>
@@ -793,6 +841,8 @@ function openMoMEditor(momId) {
 async function renderAIActivityScreen() {
   const data = await API.getAILogs();
   const tableBody = document.getElementById('ai-logs-table-body');
+  if (!tableBody) return;
+
   tableBody.innerHTML = data.logs.map(log => `
     <tr>
       <td class="p-3 text-slate-400">${new Date(log.timestamp).toLocaleTimeString()}</td>
@@ -817,14 +867,24 @@ async function renderAdminScreen() {
     document.getElementById('admin-tt-pct').innerText = `${stats.timetableUploadRatePercentage}%`;
     document.getElementById('admin-mtgs-count').innerText = stats.termMeetingsScheduled;
 
+    // Filter staffData: Do not show other admin accounts in the administration table
+    const visibleStaff = (staffData.staff || []).filter(s => {
+      if (s.role === 'admin' && currentUser && s.id !== currentUser.id) {
+        return false;
+      }
+      return true;
+    });
+
     const tbody = document.getElementById('admin-staff-table-body');
-    tbody.innerHTML = staffData.staff.map(s => `
+    if (!tbody) return;
+
+    tbody.innerHTML = visibleStaff.map(s => `
       <tr>
         <td class="p-3 font-bold text-slate-900">${s.name}</td>
         <td class="p-3">${s.department || 'Academic'}</td>
         <td class="p-3"><span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-bold text-[10px] uppercase">${s.role}</span></td>
-        <td class="p-3 text-emerald-700">Uploaded ✓</td>
-        <td class="p-3 text-emerald-700">Connected ✓</td>
+        <td class="p-3 text-emerald-700 font-medium">Uploaded ✓</td>
+        <td class="p-3 text-emerald-700 font-medium">Connected ✓</td>
         <td class="p-3 text-right">
           <button class="text-indigo-600 hover:text-indigo-900 px-2 font-bold" onclick="promptRoleChange('${s.id}', '${s.name}')">Edit Role</button>
         </td>

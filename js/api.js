@@ -23,9 +23,9 @@ const INITIAL_STAFF = [
   { id: 'usr_pooja', name: 'Dr. Pooja Rao', email: 'pooja.r@igdtuw.ac.in', role: 'faculty', category: 'faculty', designation: 'Assistant Professor', department: 'Electronics & Communication Engineering', empId: 'IGDTUW-ECE-031', cabin: 'Room 118, ECE Block', gcalSynced: true, timetableUploaded: true, avatar: 'PR', status_label: 'Available' },
   { id: 'usr_divya', name: 'Dr. Divya Malik', email: 'divya.m@igdtuw.ac.in', role: 'faculty', category: 'faculty', designation: 'Assistant Professor', department: 'Computer Science & Engineering', empId: 'IGDTUW-CSE-058', cabin: 'Room 320, CSE Block', gcalSynced: true, timetableUploaded: true, avatar: 'DM', status_label: 'Available' },
 
-  // 4. University Admins (Strictly Restricted Access)
-  { id: 'usr_aditya', name: 'Aditya (Admin)', email: 'aditya@igdtuw.ac.in', role: 'admin', category: 'admin', designation: 'University System Administrator', department: 'Computer Science & Engineering', empId: 'IGDTUW-ADM-001', cabin: 'Admin Block, Room 101', gcalSynced: true, timetableUploaded: true, avatar: 'AD', status_label: 'Available' },
-  { id: 'usr_arun', name: 'Arun (Admin)', email: 'arun@igdtuw.ac.in', role: 'admin', category: 'admin', designation: 'Chief Technology Officer', department: 'Information Technology', empId: 'IGDTUW-ADM-002', cabin: 'Admin Block, Room 102', gcalSynced: true, timetableUploaded: true, avatar: 'AR', status_label: 'Available' }
+  // 4. University Leadership
+  { id: 'usr_aditya', name: 'Dr. Aditya Verma', email: 'aditya@igdtuw.ac.in', role: 'admin', category: 'faculty', designation: 'Director of IT & Systems', department: 'Computer Science & Engineering', empId: 'IGDTUW-ADM-001', cabin: 'Admin Block, Room 101', gcalSynced: true, timetableUploaded: true, avatar: 'AV', status_label: 'Available' },
+  { id: 'usr_arun', name: 'Dr. Arun Kumar', email: 'arun@igdtuw.ac.in', role: 'admin', category: 'vc_deans', designation: 'Dean of Academic Affairs', department: 'Academic Administration', empId: 'IGDTUW-ADM-002', cabin: 'Admin Block, Room 102', gcalSynced: true, timetableUploaded: true, avatar: 'AK', status_label: 'Available' }
 ];
 
 const INITIAL_TIMETABLE = {

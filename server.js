@@ -84,6 +84,6 @@ app.listen(PORT, () => {
   console.log(`🎓 IGDTUW AI Staff Meeting Organizer Server Active`);
   console.log(`📡 URL: http://localhost:${PORT}`);
   console.log(`🏛️ Institution: Indira Gandhi Delhi Technical University`);
-  console.log(`🛡️ Designated Admins: Aditya & Arun`);
+  console.log(`🛡️ Access: Role-Based Institutional Access Control`);
   console.log(`================================================================`);
 });
