@@ -316,6 +316,19 @@ function logoutUser() {
   API.setUserId(null);
   currentUser = null;
   localStorage.removeItem('meetflow_user_id');
+
+  const nameEl = document.getElementById('user-display-name');
+  if (nameEl) nameEl.innerText = 'Faculty Member';
+  const roleEl = document.getElementById('user-display-role');
+  if (roleEl) roleEl.innerText = 'IGDTUW';
+  const emailEl = document.getElementById('user-display-email');
+  if (emailEl) emailEl.innerText = '';
+  const avatarEl = document.getElementById('user-avatar');
+  if (avatarEl) avatarEl.innerText = '--';
+
+  const adminNavGroup = document.getElementById('admin-nav-group');
+  if (adminNavGroup) adminNavGroup.classList.add('hidden');
+
   navigateTo('login');
 }
 
@@ -343,26 +356,46 @@ function navigateTo(screenId) {
 
   screens.forEach(s => {
     const el = document.getElementById('screen-' + s);
-    if (el) el.classList.add('hidden');
+    if (el) {
+      el.classList.add('hidden');
+      el.style.display = 'none';
+    }
   });
 
   const target = document.getElementById('screen-' + screenId);
-  if (target) target.classList.remove('hidden');
+  if (target) {
+    target.classList.remove('hidden');
+    target.style.display = '';
+  }
 
-  // Sidebar visibility: Hide sidebar entirely on login screen
+  // Sidebar & Header visibility: Hide entirely on login screen, show on authenticated screens
   const sidebar = document.getElementById('app-sidebar');
   const header = document.getElementById('app-header');
   const backdrop = document.getElementById('mobile-sidebar-backdrop');
   if (screenId === 'login') {
     if (sidebar) {
       sidebar.classList.add('hidden');
+      sidebar.classList.remove('flex', 'md:flex');
       sidebar.classList.add('-translate-x-full');
+      sidebar.style.display = 'none';
     }
-    if (header) header.classList.add('hidden');
+    if (header) {
+      header.classList.add('hidden');
+      header.classList.remove('flex');
+      header.style.display = 'none';
+    }
     if (backdrop) backdrop.classList.add('hidden');
   } else {
-    if (sidebar) sidebar.classList.remove('hidden');
-    if (header) header.classList.remove('hidden');
+    if (sidebar) {
+      sidebar.classList.remove('hidden');
+      sidebar.classList.add('flex');
+      sidebar.style.display = '';
+    }
+    if (header) {
+      header.classList.remove('hidden');
+      header.classList.add('flex');
+      header.style.display = '';
+    }
   }
 
   // Sidebar navigation active highlight
