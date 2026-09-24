@@ -25,6 +25,9 @@ app.use(express.urlencoded({ extended: true }));
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Serve the bundled frontend for local development
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Apply Auth Middleware to API endpoints
 app.use('/api', authMiddleware);
 

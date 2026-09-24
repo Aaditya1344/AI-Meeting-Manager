@@ -398,16 +398,14 @@ function navigateTo(screenId) {
     }
   }
 
-  // Sidebar navigation active highlight
+  // Sidebar navigation active highlight (moves dynamically to selected item)
   document.querySelectorAll('.nav-item').forEach(btn => {
-    btn.classList.remove('text-indigo-700', 'bg-indigo-50', 'font-semibold');
-    btn.classList.add('text-slate-700', 'font-medium');
+    btn.classList.remove('nav-active');
   });
 
   const activeNav = document.getElementById('nav-' + screenId);
   if (activeNav) {
-    activeNav.classList.remove('text-slate-700', 'font-medium');
-    activeNav.classList.add('text-indigo-700', 'bg-indigo-50', 'font-semibold');
+    activeNav.classList.add('nav-active');
   }
 
   if (screenId !== 'login') {
@@ -458,14 +456,78 @@ async function loadScreenData(screenId) {
 // 1. Dashboard Renderer
 async function renderDashboard() {
   try {
+    // Dynamic Time-based Greeting & Subtitle
+    const now = new Date();
+    const hour = now.getHours();
+    let timeGreeting = 'Good morning';
+    if (hour >= 12 && hour < 17) {
+      timeGreeting = 'Good afternoon';
+    } else if (hour >= 17) {
+      timeGreeting = 'Good evening';
+    }
+
+    const userName = currentUser ? currentUser.name : 'Dr. Arvind Kumar';
+    const titleEl = document.getElementById('dash-greeting-title');
+    if (titleEl) {
+      titleEl.innerText = `${timeGreeting}, ${userName}`;
+    }
+
+    const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+    const formattedDate = now.toLocaleDateString('en-US', options);
+    const dateEl = document.getElementById('dash-greeting-date');
+    if (dateEl) {
+      dateEl.innerText = formattedDate;
+    }
+
     const [meetingsData, aiData] = await Promise.all([
       API.getMeetings(),
       API.getAIStats()
     ]);
+
+    const meetings = (meetingsData && meetingsData.meetings) ? meetingsData.meetings : [];
     const upcomingEl = document.getElementById('dash-upcoming-count');
-    if (upcomingEl) upcomingEl.innerText = meetingsData.meetings.length;
+    if (upcomingEl) upcomingEl.innerText = meetings.length;
+
+    // Populate Upcoming Staff Meetings list on the dashboard
+    const upcomingListContainer = document.getElementById('dash-upcoming-meetings-list');
+    if (upcomingListContainer) {
+      if (meetings.length === 0) {
+        upcomingListContainer.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs font-semibold">No upcoming staff meetings scheduled. Click "Schedule New Meeting" to organize one.</div>`;
+      } else {
+        upcomingListContainer.innerHTML = meetings.map(m => {
+          const participantNames = m.participants && m.participants.length > 0 
+            ? m.participants.map(p => p.name || p).join(', ') 
+            : 'Dr. Sharma, Dr. Sneha, Dr. Manpreet, Dr. Ananya';
+          const participantCount = m.participants && m.participants.length > 0 ? m.participants.length : 4;
+
+          return `
+            <div class="p-3.5 rounded-2xl border-2 border-[#bcd1e8] bg-white hover:border-[#043363] hover:bg-[#eef4fa]/40 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+              <div class="flex items-start gap-3.5">
+                <div class="w-12 h-12 rounded-xl bg-[#043363] text-white flex flex-col items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                  <span class="text-[9px] uppercase font-mono-code text-teal-200">TODAY</span>
+                  <span class="font-extrabold">${m.start_time || '10:00'}</span>
+                </div>
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <h4 class="text-xs font-bold text-[#043363]">${m.title}</h4>
+                    <span class="text-[10px] font-bold bg-[#eaf6e0] text-[#135106] border border-[#cddac2] px-2 py-0.5 rounded-full">Confirmed ✓</span>
+                    <span class="text-[10px] font-bold bg-[#dcf6f4] text-[#134e48] border border-[#beece8] px-2 py-0.5 rounded-full">Google Meet</span>
+                  </div>
+                  <p class="text-[11px] text-slate-600 mt-1 truncate font-medium">Participants: ${participantNames} (${participantCount} faculty)</p>
+                  <p class="text-[11px] text-slate-500 flex items-center gap-1">📍 ${m.location || 'Senate Room / Conference Hall'}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                <button onclick="navigateTo('my-meetings')" class="px-3 py-1.5 text-xs font-bold text-[#043363] bg-[#eef4fa] border border-[#bcd1e8] hover:bg-[#dce8f5] rounded-xl transition cursor-pointer">View Details</button>
+                <a href="${m.googleMeetLink || 'https://meet.google.com'}" target="_blank" class="px-3 py-1.5 text-xs font-bold text-white bg-[#2a7f7b] hover:bg-[#1e5a57] rounded-xl transition cursor-pointer shadow-xs">Join Meet</a>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
   } catch (e) {
-    console.warn(e);
+    console.warn('Error rendering dashboard:', e);
   }
 }
 
@@ -743,7 +805,6 @@ function renderRecommendations() {
             </div>
           </div>
         </div>
-        <span class="text-xs font-bold text-indigo-700 bg-white border border-indigo-200 px-2.5 py-1 rounded-lg">Select Slot</span>
       </label>
     `;
   }).join('');
@@ -1244,3 +1305,37 @@ async function triggerCalendarSyncNow() {
     }
   }
 }
+
+// ---------------------------------------------------------
+// Custom Clean AI Message Modal (Replaces browser alert popup)
+// ---------------------------------------------------------
+function showAIMessage(msg) {
+  const modal = document.getElementById('ai-message-modal');
+  const content = document.getElementById('ai-message-content');
+  if (modal && content) {
+    content.innerText = typeof msg === 'string' ? msg : JSON.stringify(msg);
+    modal.classList.remove('hidden');
+  } else {
+    if (window._nativeAlert) {
+      window._nativeAlert(msg);
+    } else {
+      console.log('AI Message:', msg);
+    }
+  }
+}
+
+function closeAIMessageModal() {
+  const modal = document.getElementById('ai-message-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+
+// Hook global alert to use custom on-screen modal
+if (typeof window !== 'undefined') {
+  window._nativeAlert = window.alert;
+  window.alert = function(msg) {
+    showAIMessage(msg);
+  };
+}
+

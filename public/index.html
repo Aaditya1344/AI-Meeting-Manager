@@ -3,160 +3,236 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MeetFlow — Staff Meeting Organizer | IGDTUW</title>
+  <title>Indira Gandhi Delhi Technical University for Women — Meeting Portal</title>
+  <link rel="icon" type="image/png" href="/images/igdtuw-logo.png">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            // Official IGDTUW Brand Palette (https://www.igdtuw.ac.in/)
+            navy: {
+              50: '#eef4fa',
+              100: '#dce8f5',
+              200: '#bcd1e8',
+              300: '#8baed4',
+              400: '#4d83ba',
+              500: '#1d5e9e',
+              600: '#043363', // Official Primary Navy Blue
+              700: '#032a52',
+              800: '#02203f',
+              900: '#01152a',
+            },
+            indigo: {
+              50: '#eef4fa',
+              100: '#dce8f5',
+              200: '#bcd1e8',
+              300: '#8baed4',
+              400: '#4d83ba',
+              500: '#1d5e9e',
+              600: '#043363', // Official Primary Navy Blue
+              700: '#032a52',
+              800: '#02203f',
+              900: '#01152a',
+            },
+            teal: {
+              50: '#f0faf9',
+              100: '#dcf6f4', // Official IGDTUW Teal Light
+              200: '#beece8',
+              300: '#8ddbd4',
+              400: '#52c1b7',
+              500: '#2a7f7b', // Official IGDTUW Teal Accent
+              600: '#246f6c',
+              700: '#1e5a57',
+              800: '#194846',
+              900: '#143836',
+            },
+            emerald: {
+              50: '#f2f8ed',
+              100: '#eaf6e0', // Official IGDTUW Forest Green Light
+              200: '#cddac2',
+              300: '#a3be92',
+              400: '#719d59',
+              500: '#3d7829',
+              600: '#135106', // Official IGDTUW Forest Green
+              700: '#104505',
+              800: '#0d3604',
+              900: '#0a2903',
+            },
+            rose: {
+              50: '#fef2f2',
+              100: '#fee2e2',
+              500: '#eb1d24', // Official IGDTUW Crimson Red
+              600: '#d1151b',
+              700: '#b00f14',
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Lato', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased h-screen overflow-hidden flex flex-col">
+<body class="bg-[#f0f5f2] text-slate-800 antialiased h-screen overflow-hidden flex flex-col font-sans">
 
-  <!-- Top App Navigation Bar (Hidden on Login Screen) -->
-  <header id="app-header" class="hidden bg-white border-b border-slate-200 h-14 px-3 sm:px-4 flex items-center justify-between shrink-0 z-30">
-    <div class="flex items-center gap-2.5 sm:gap-3">
+  <!-- Top App Navigation Bar (IGDTUW Deep Forest Green with Teal Accent Line) -->
+  <header id="app-header" class="hidden bg-[#135106] border-b-4 border-[#2a7f7b] h-16 px-3 sm:px-5 flex items-center justify-between shrink-0 z-30 shadow-md">
+    <div class="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
       <!-- Mobile Sidebar Hamburger Button -->
-      <button id="mobile-menu-btn" onclick="toggleMobileSidebar()" class="md:hidden p-1.5 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition focus:outline-none" title="Open Navigation Menu">
+      <button id="mobile-menu-btn" onclick="toggleMobileSidebar()" class="md:hidden p-2 rounded-xl text-white hover:bg-white/10 transition focus:outline-none shrink-0" title="Open Navigation Menu">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
         </svg>
       </button>
 
-      <div class="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-indigo-600 text-white font-bold text-base sm:text-lg shadow-sm shrink-0">
-        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-        </svg>
-      </div>
+      <img src="/images/igdtuw-logo.png" alt="IGDTUW Logo" class="w-10 h-10 object-contain rounded-full border-2 border-white shadow-xs shrink-0 bg-white p-0.5">
       <div class="min-w-0">
-        <div class="flex items-center gap-1.5 sm:gap-2">
-          <span class="font-bold text-slate-900 tracking-tight text-sm sm:text-base">MeetFlow</span>
-          <span class="text-[10px] bg-indigo-50 text-indigo-700 font-bold px-1.5 py-0.5 rounded border border-indigo-100 hidden sm:inline">IGDTUW</span>
-        </div>
-        <p class="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate hidden sm:block">Indira Gandhi Delhi Technical University • Academic Meeting Portal</p>
+        <h1 class="font-extrabold text-white tracking-tight text-sm sm:text-base md:text-lg lg:text-xl truncate leading-snug drop-shadow-xs">Indira Gandhi Delhi Technical University for Women</h1>
       </div>
     </div>
 
-    <!-- Header Actions -->
-    <div class="flex items-center gap-2 sm:gap-3">
-      <div class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-[11px] sm:text-xs text-emerald-800 font-medium">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span class="hidden sm:inline">Synced with G-Cal & Timetable</span>
-        <span class="sm:hidden">Synced</span>
-      </div>
+    <!-- Right Side of Header Bar: Notification Icon + MeetFlow Heading -->
+    <div class="flex items-center gap-3 sm:gap-4 shrink-0 ml-3">
+      <!-- Notification Bell Icon Button -->
+      <button onclick="navigateTo('notifications')" id="top-notification-btn" title="View Notifications" class="relative p-2 rounded-xl text-white hover:text-teal-200 hover:bg-white/10 transition focus:outline-none cursor-pointer">
+        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+        </svg>
+        <span class="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#eb1d24] opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#eb1d24] ring-2 ring-white"></span>
+        </span>
+      </button>
+
+      <!-- MeetFlow treated as a prominent heading itself -->
+      <h2 class="text-base sm:text-lg md:text-xl font-black text-white tracking-tight select-none">MeetFlow</h2>
     </div>
   </header>
 
   <!-- Mobile Sidebar Backdrop -->
-  <div id="mobile-sidebar-backdrop" onclick="closeMobileSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-40 hidden md:hidden transition-opacity"></div>
+  <div id="mobile-sidebar-backdrop" onclick="closeMobileSidebar()" class="fixed inset-0 bg-[#043363]/60 backdrop-blur-xs z-40 hidden md:hidden transition-opacity"></div>
 
   <!-- Main Container -->
   <div class="flex flex-1 overflow-hidden relative">
     <!-- Left Sidebar (Drawer on mobile, fixed on desktop) -->
-    <aside id="app-sidebar" class="hidden flex-col justify-between fixed md:static inset-y-0 left-0 z-50 w-72 md:w-64 max-w-[85vw] bg-white border-r border-slate-200 shrink-0 select-none shadow-2xl md:shadow-none transition-transform duration-200 -translate-x-full md:translate-x-0">
+    <aside id="app-sidebar" class="hidden flex-col justify-between fixed md:static inset-y-0 left-0 z-50 w-72 md:w-64 max-w-[85vw] bg-[#f4f8f5] border-r border-[#cddac2] shrink-0 select-none shadow-2xl md:shadow-none transition-transform duration-200 -translate-x-full md:translate-x-0">
       
       <!-- Mobile Close Header -->
-      <div class="p-3 border-b border-slate-100 flex items-center justify-between md:hidden">
+      <div class="p-3 bg-[#135106] text-white border-b border-[#2a7f7b] flex items-center justify-between md:hidden">
         <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center">MF</div>
-          <span class="font-bold text-xs text-slate-900">Menu</span>
+          <img src="/images/igdtuw-logo.png" alt="IGDTUW Logo" class="w-7 h-7 object-contain rounded-full border border-white bg-white">
+          <span class="font-bold text-xs text-white">IGDTUW Portal</span>
         </div>
-        <button onclick="closeMobileSidebar()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100" title="Close menu">
+        <button onclick="closeMobileSidebar()" class="p-1.5 rounded-lg text-white hover:bg-white/20" title="Close menu">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
       </div>
 
-      <div class="p-3 overflow-y-auto space-y-1">
-        <div class="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">Core Workspace</div>
+      <div class="p-3 overflow-y-auto space-y-1.5">
+        <div class="px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-[#135106]">Core Workspace</div>
         
-        <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 transition">
+        <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-item nav-active w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
           <span>Dashboard</span>
         </button>
-        <button onclick="navigateTo('calendar')" id="nav-calendar" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+        <button onclick="navigateTo('calendar')" id="nav-calendar" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
           <span>Calendar</span>
         </button>
-        <button onclick="navigateTo('my-meetings')" id="nav-my-meetings" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+        <button onclick="navigateTo('my-meetings')" id="nav-my-meetings" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
           <span>My Meetings</span>
         </button>
-        <button onclick="navigateTo('staff')" id="nav-staff" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+        <button onclick="navigateTo('staff')" id="nav-staff" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
           <span>Staff Directory</span>
         </button>
-        <button onclick="navigateTo('mom')" id="nav-mom" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+        <button onclick="navigateTo('mom')" id="nav-mom" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
           <span>Minutes of Meeting</span>
-          <span class="ml-auto text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">MoM</span>
+          <span class="ml-auto text-[10px] bg-amber-200 text-amber-900 font-bold px-1.5 py-0.5 rounded">MoM</span>
+        </button>
+
+        <button onclick="navigateTo('notifications')" id="nav-notifications" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+          <span>Notifications</span>
+          <span class="ml-auto text-[10px] bg-[#eb1d24] text-white font-bold px-1.5 py-0.5 rounded">3</span>
         </button>
 
         <!-- Admin Control Panel -->
         <div id="admin-nav-group" class="pt-2">
-          <div class="px-3 pt-2 py-1 text-[11px] font-bold uppercase tracking-wider text-purple-600 flex items-center justify-between">
+          <div class="px-3 pt-2 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#135106] flex items-center justify-between">
             <span>Admin Control Panel</span>
-            <span class="text-[9px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-bold uppercase">Admin</span>
+            <span class="text-[9px] bg-[#135106] text-white px-1.5 py-0.5 rounded font-bold uppercase">Admin</span>
           </div>
-          <button onclick="navigateTo('admin')" id="nav-admin" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-purple-800 bg-purple-50/60 hover:bg-purple-100 transition border border-purple-200">
-            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <button onclick="navigateTo('admin')" id="nav-admin" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition">
+            <svg class="w-4 h-4 text-[#135106]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             <span>University Admin Center</span>
           </button>
         </div>
 
-        <button onclick="navigateTo('settings')" id="nav-settings" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+        <button onclick="navigateTo('settings')" id="nav-settings" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
           <span>Settings & Config</span>
         </button>
       </div>
 
       <!-- User Profile Drawer -->
-      <div class="p-3 border-t border-slate-200 bg-slate-50/70">
+      <div class="p-3 border-t border-[#cddac2] bg-[#eaf6e0]">
         <div class="flex items-center gap-3">
-          <div id="user-avatar" class="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xs shrink-0">--</div>
+          <div id="user-avatar" class="w-9 h-9 rounded-full bg-[#135106] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs border border-white">--</div>
           <div class="flex-1 min-w-0">
-            <p class="text-xs font-bold text-slate-900 truncate" id="user-display-name">Faculty Member</p>
-            <p class="text-[11px] text-slate-500 truncate" id="user-display-role">IGDTUW</p>
-            <p class="text-[10px] text-emerald-600 font-mono-code truncate" id="user-display-email"></p>
+            <p class="text-xs font-bold text-[#135106] truncate" id="user-display-name">Faculty Member</p>
+            <p class="text-[11px] text-slate-700 font-semibold truncate" id="user-display-role">IGDTUW</p>
+            <p class="text-[10px] text-slate-600 font-mono-code truncate" id="user-display-email"></p>
           </div>
-          <button onclick="logoutUser()" title="Log Out" class="text-slate-400 hover:text-rose-600 p-1.5 rounded transition shrink-0">
+          <button onclick="logoutUser()" title="Log Out" class="text-slate-500 hover:text-[#eb1d24] p-1.5 rounded transition shrink-0 cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
           </button>
         </div>
       </div>
     </aside>
 
-    <!-- Main Content Canvas -->
-    <main class="flex-1 bg-slate-50 overflow-y-auto relative" id="main-content-canvas">
+    <!-- Main Content Canvas (Themed Sage Background) -->
+    <main class="flex-1 bg-[#f0f5f2] overflow-y-auto relative" id="main-content-canvas">
 
       <!-- SCREEN 1: LOGIN (SHOWN BY DEFAULT) -->
-      <section id="screen-login" class="min-h-full flex items-center justify-center p-6 bg-gradient-to-br from-slate-100 via-white to-indigo-50/40">
-        <div class="max-w-md w-full bg-white rounded-2xl border border-slate-200 shadow-xl p-8 space-y-6">
+      <section id="screen-login" class="min-h-full flex items-center justify-center p-6 bg-gradient-to-br from-[#135106] via-[#043363] to-[#2a7f7b]">
+        <div class="max-w-md w-full bg-white/95 backdrop-blur-md rounded-3xl border-2 border-[#2a7f7b]/40 shadow-2xl p-8 space-y-6">
           <div class="text-center space-y-2">
-            <div class="mx-auto w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-md font-bold text-xl">
-              MF
+            <div class="mx-auto w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg p-1 border-2 border-[#135106]">
+              <img src="/images/igdtuw-logo.png" alt="IGDTUW Logo" class="w-full h-full object-contain rounded-full">
             </div>
-            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Sign in to MeetFlow</h1>
-            <p class="text-xs text-slate-500">Smart meeting scheduling for Indira Gandhi Delhi Technical University</p>
+            <h1 class="text-xl font-black text-[#135106] tracking-tight">Indira Gandhi Delhi Technical University for Women</h1>
+            <p class="text-xs text-[#2a7f7b] font-bold">Smart AI Meeting Portal &bull; MeetFlow</p>
           </div>
 
           <!-- Email & Password Form -->
           <form id="email-login-form" onsubmit="handleEmailLogin(event)" class="space-y-4 text-xs">
-            <div id="email-login-error" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 font-medium"></div>
+            <div id="email-login-error" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-[#eb1d24] font-medium"></div>
 
             <div class="space-y-1">
               <label class="block font-bold text-slate-700">Institutional Email *</label>
-              <input type="email" id="login-email" placeholder="faculty@igdtuw.ac.in" required class="w-full p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+              <input type="email" id="login-email" placeholder="faculty@igdtuw.ac.in" required class="w-full p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#135106] font-medium">
             </div>
 
             <div class="space-y-1">
               <div class="flex items-center justify-between">
                 <label class="block font-bold text-slate-700">Password *</label>
-                <a href="javascript:void(0)" onclick="alert('Please contact IGDTUW IT Center (admin@igdtuw.ac.in) for password reset or use Google Workspace Sign-In.')" class="text-[11px] text-indigo-600 hover:underline">Forgot password?</a>
+                <a href="javascript:void(0)" onclick="alert('Please contact IGDTUW IT Center (admin@igdtuw.ac.in) for password reset or use Google Workspace Sign-In.')" class="text-[11px] text-[#135106] font-semibold hover:underline">Forgot password?</a>
               </div>
-              <input type="password" id="login-password" placeholder="Enter your password" required minlength="4" class="w-full p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+              <input type="password" id="login-password" placeholder="Enter your password" required minlength="4" class="w-full p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#135106] font-medium">
             </div>
 
-            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-xs transition text-xs flex items-center justify-center gap-2">
+            <button type="submit" class="w-full bg-[#135106] hover:bg-[#0e3d04] text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition text-xs flex items-center justify-center gap-2 cursor-pointer">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
               <span>Sign In with Password</span>
             </button>
@@ -170,7 +246,7 @@
           </div>
 
           <!-- Official Google Sign In Button -->
-          <button type="button" onclick="handleGoogleLogin()" class="w-full flex items-center justify-center gap-2.5 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 text-slate-700 font-semibold py-2.5 px-4 rounded-xl shadow-xs transition text-xs group">
+          <button type="button" onclick="handleGoogleLogin()" class="w-full flex items-center justify-center gap-2.5 bg-white border-2 border-slate-300 hover:bg-slate-50 hover:border-[#135106] text-slate-700 font-bold py-2.5 px-4 rounded-xl shadow-xs transition text-xs group cursor-pointer">
             <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
             <span>Continue with Google Workspace</span>
           </button>
@@ -179,39 +255,156 @@
 
       <!-- SCREEN 2: DASHBOARD -->
       <section id="screen-dashboard" class="hidden p-6 space-y-6">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <!-- Top Banner / Dynamic University Forest Green Header -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-[#135106] via-[#1a660a] to-[#2a7f7b] text-white p-6 rounded-2xl shadow-md border border-[#135106]">
           <div>
-            <h1 class="text-xl font-bold text-slate-900 tracking-tight">Indira Gandhi Delhi Technical University</h1>
-            <p class="text-xs text-slate-500 mt-1">Semester I Master Timetable & Google Calendar Synchronized</p>
+            <div class="flex items-center gap-2.5">
+              <h1 class="text-xl md:text-2xl font-black text-white tracking-tight" id="dash-greeting-title">Good morning, Faculty Member</h1>
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 text-white border border-white/30 backdrop-blur-xs">Meeting Organizer</span>
+            </div>
+            <p class="text-xs text-emerald-100 font-medium mt-1.5 flex flex-wrap items-center gap-2" id="dash-greeting-subtitle">
+              <span id="dash-greeting-date">Friday, 11 September 2026</span>
+              <span>•</span>
+              <span class="text-white font-bold">Timetable: Semester I (Active)</span>
+              <span>•</span>
+              <span id="dash-greeting-slots" class="text-emerald-100 font-semibold">3 slots free today</span>
+            </p>
           </div>
           <div class="flex items-center gap-2.5">
-            <button onclick="navigateTo('timetable')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-xs transition flex items-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-              <span>Upload Timetable (PDF / Pic)</span>
+            <button onclick="navigateTo('timetable')" class="px-3.5 py-2 text-xs font-bold text-white bg-white/20 hover:bg-white/30 border border-white/40 rounded-xl transition shadow-xs cursor-pointer">
+              View My Timetable
+            </button>
+            <button onclick="navigateTo('create-meeting')" class="flex items-center gap-1.5 bg-white hover:bg-slate-100 text-[#135106] px-4 py-2 rounded-xl text-xs font-extrabold shadow-md transition cursor-pointer">
+              <svg class="w-4 h-4 text-[#135106]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+              <span>Schedule New Meeting</span>
             </button>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-            <p class="text-xs font-semibold text-slate-500 uppercase">Meetings Today</p>
-            <p class="text-2xl font-extrabold text-slate-900 mt-1">1</p>
-            <p class="text-[11px] text-indigo-600 font-medium mt-0.5">Curriculum Review @ 10:00 AM</p>
+        <!-- 4 Distinctive Themed Key Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Card 1: Meetings Today (Forest Green Theme) -->
+          <div class="bg-gradient-to-br from-[#eaf6e0] to-[#d6ebd0] p-4 rounded-2xl border-2 border-[#135106]/35 shadow-xs flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-[#135106] uppercase tracking-wider">Meetings Today</p>
+              <p class="text-2xl font-black text-[#135106] mt-1" id="dash-today-count">1</p>
+              <p class="text-[11px] text-[#135106] font-semibold mt-0.5" id="dash-today-next">Curriculum Review @ 10:00 AM</p>
+            </div>
+            <div class="w-11 h-11 rounded-2xl bg-[#135106] text-white flex items-center justify-center font-bold shadow-xs">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
           </div>
-          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-            <p class="text-xs font-semibold text-slate-500 uppercase">Upcoming Meetings</p>
-            <p class="text-2xl font-extrabold text-slate-900 mt-1" id="dash-upcoming-count">2</p>
-            <p class="text-[11px] text-slate-500 mt-0.5">Across this & next week</p>
+
+          <!-- Card 2: Upcoming Meetings (Navy Blue Theme) -->
+          <div class="bg-gradient-to-br from-[#eef4fa] to-[#d8e7f7] p-4 rounded-2xl border-2 border-[#043363]/35 shadow-xs flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-[#043363] uppercase tracking-wider">Upcoming Meetings</p>
+              <p class="text-2xl font-black text-[#043363] mt-1" id="dash-upcoming-count">2</p>
+              <p class="text-[11px] text-[#043363] font-semibold mt-0.5">Across this & next week</p>
+            </div>
+            <div class="w-11 h-11 rounded-2xl bg-[#043363] text-white flex items-center justify-center font-bold shadow-xs">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            </div>
           </div>
-          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-            <p class="text-xs font-semibold text-slate-500 uppercase">Pending MoM</p>
-            <p class="text-2xl font-extrabold text-amber-600 mt-1">1</p>
-            <p class="text-[11px] text-amber-700 font-medium mt-0.5">AI draft ready for sign-off</p>
+
+          <!-- Card 3: Pending MoM (Amber / Gold Theme) -->
+          <div class="bg-gradient-to-br from-[#fff8eb] to-[#fdedcd] p-4 rounded-2xl border-2 border-[#d97706]/35 shadow-xs flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-[#92400e] uppercase tracking-wider">Pending MoM</p>
+              <p class="text-2xl font-black text-[#b45309] mt-1" id="dash-mom-count">1</p>
+              <p class="text-[11px] text-[#92400e] font-semibold mt-0.5">AI draft ready for sign-off</p>
+            </div>
+            <div class="w-11 h-11 rounded-2xl bg-[#d97706] text-white flex items-center justify-center font-bold shadow-xs">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            </div>
           </div>
-          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-            <p class="text-xs font-semibold text-slate-500 uppercase">Available Faculty</p>
-            <p class="text-2xl font-extrabold text-emerald-600 mt-1">6 / 6</p>
-            <p class="text-[11px] text-emerald-700 mt-0.5">100% G-Cal Synced</p>
+
+          <!-- Card 4: Available Faculty (University Teal Theme) -->
+          <div class="bg-gradient-to-br from-[#dcf6f4] to-[#bcece8] p-4 rounded-2xl border-2 border-[#2a7f7b]/35 shadow-xs flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-[#134e48] uppercase tracking-wider">Available Faculty</p>
+              <p class="text-2xl font-black text-[#134e48] mt-1">6 <span class="text-xs font-normal text-[#2a7f7b]">/ 6</span></p>
+              <p class="text-[11px] text-[#134e48] font-semibold mt-0.5">100% G-Cal Synced</p>
+            </div>
+            <div class="w-11 h-11 rounded-2xl bg-[#2a7f7b] text-white flex items-center justify-center font-bold shadow-xs">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Today's Blended Schedule Panel (University Teal & Green Header) -->
+        <div class="bg-white rounded-2xl border-2 border-[#2a7f7b]/30 shadow-xs overflow-hidden">
+          <div class="bg-gradient-to-r from-[#2a7f7b] to-[#135106] text-white p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <span>📅</span>
+                <span>Today's Blended Schedule (Timetable + Meetings)</span>
+              </h3>
+              <p class="text-xs text-teal-100 mt-0.5">Live combined view of lecture hours, lab periods, and scheduled committee meetings</p>
+            </div>
+            <button onclick="navigateTo('calendar')" class="text-xs font-bold text-white bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition self-start sm:self-auto cursor-pointer">Open Full Calendar &rarr;</button>
+          </div>
+
+          <!-- Visual Time Slots Bar with distinctive colors -->
+          <div class="p-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 text-center text-xs">
+            <div class="p-3 rounded-xl border-2 border-[#135106]/40 bg-[#eaf6e0] shadow-2xs">
+              <span class="block text-[10px] font-mono-code text-[#135106] font-bold">09:00 AM</span>
+              <span class="font-black text-[#135106] block mt-1">FREE</span>
+              <span class="text-[9px] text-[#135106] font-semibold block">Available</span>
+            </div>
+            <div class="p-3 rounded-xl border-2 border-[#043363]/40 bg-[#eef4fa] shadow-2xs">
+              <span class="block text-[10px] font-mono-code text-[#043363] font-bold">10:00 AM</span>
+              <span class="font-black text-[#043363] block mt-1">CS-301</span>
+              <span class="text-[9px] text-[#043363] font-semibold block">Lecture (LH-2)</span>
+            </div>
+            <div class="p-3 rounded-xl border-2 border-[#2a7f7b]/40 bg-[#dcf6f4] shadow-2xs">
+              <span class="block text-[10px] font-mono-code text-[#2a7f7b] font-bold">11:00 AM</span>
+              <span class="font-black text-[#134e48] block mt-1">CS-301</span>
+              <span class="text-[9px] text-[#134e48] font-semibold block">Lab (CL-4)</span>
+            </div>
+            <div class="p-3 rounded-xl border-2 border-slate-300 bg-slate-100 shadow-2xs">
+              <span class="block text-[10px] font-mono-code text-slate-500 font-bold">12:00 PM</span>
+              <span class="font-black text-slate-700 block mt-1">LUNCH</span>
+              <span class="text-[9px] text-slate-500 font-semibold block">Institutional</span>
+            </div>
+            <div class="p-3 rounded-xl border-2 border-[#135106]/40 bg-[#eaf6e0] shadow-2xs">
+              <span class="block text-[10px] font-mono-code text-[#135106] font-bold">01:00 PM</span>
+              <span class="font-black text-[#135106] block mt-1">FREE</span>
+              <span class="text-[9px] text-[#135106] font-semibold block">Office Hour</span>
+            </div>
+            <div class="p-3 rounded-xl border-2 border-[#043363]/40 bg-[#eef4fa] shadow-2xs">
+              <span class="block text-[10px] font-mono-code text-[#043363] font-bold">02:00 PM</span>
+              <span class="font-black text-[#043363] block mt-1">CS-504</span>
+              <span class="text-[9px] text-[#043363] font-semibold block">Lecture (LH-1)</span>
+            </div>
+            <div class="p-3 rounded-xl border-2 border-[#eb1d24] bg-[#fef2f2] ring-2 ring-[#eb1d24]/20 shadow-xs">
+              <span class="block text-[10px] font-mono-code text-[#eb1d24] font-bold">03:00 PM</span>
+              <span class="font-black text-[#eb1d24] block mt-1">MEETING</span>
+              <span class="text-[9px] text-[#eb1d24] font-bold block">Syllabus Rev</span>
+            </div>
+            <div class="p-3 rounded-xl border-2 border-[#135106]/40 bg-[#eaf6e0] shadow-2xs">
+              <span class="block text-[10px] font-mono-code text-[#135106] font-bold">04:00 PM</span>
+              <span class="font-black text-[#135106] block mt-1">FREE</span>
+              <span class="text-[9px] text-[#135106] font-semibold block">Available</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Staff Meetings Panel (IGDTUW Green Header) -->
+        <div class="bg-white rounded-2xl border-2 border-[#135106]/30 shadow-xs overflow-hidden">
+          <div class="bg-gradient-to-r from-[#135106] to-[#1a660a] text-white p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <span>👥</span>
+                <span>Upcoming Staff Meetings</span>
+              </h3>
+              <p class="text-xs text-emerald-100 mt-0.5">Scheduled departmental and institutional committee meetings</p>
+            </div>
+            <button onclick="navigateTo('my-meetings')" class="text-xs font-bold text-white bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition self-start sm:self-auto cursor-pointer">View All Meetings &rarr;</button>
+          </div>
+
+          <div id="dash-upcoming-meetings-list" class="p-5 space-y-3">
+            <!-- Rendered dynamically by renderDashboard() in app.js -->
           </div>
         </div>
       </section>
@@ -606,9 +799,76 @@
 
       <!-- SCREEN 9: NOTIFICATIONS -->
       <section id="screen-notifications" class="hidden p-6 space-y-6">
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 text-xs">
-          <h2 class="text-base font-bold text-slate-900 mb-2">Notifications</h2>
-          <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-indigo-900 font-medium">🔔 Meeting in 30 mins: IGDTUW Curriculum Review at 10:00 AM.</div>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-xl font-bold text-slate-900 tracking-tight">Institutional Notifications</h2>
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">3 New</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Real-time alerts for meeting invites, reminders, Google Calendar syncs, and MoM reviews</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="showAIMessage('All notifications marked as read.')" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition cursor-pointer">
+              Mark all as read
+            </button>
+            <button onclick="navigateTo('dashboard')" class="px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition cursor-pointer">
+              &larr; Back to Dashboard
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs divide-y divide-slate-100 text-xs overflow-hidden">
+          <!-- Notification 1: 30-min meeting reminder -->
+          <div class="p-4 flex items-start gap-3.5 hover:bg-slate-50/80 transition">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center font-bold shrink-0 text-base">
+              🔔
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-bold text-slate-900">Upcoming Meeting in 30 Minutes</span>
+                <span class="text-[10px] text-slate-400 font-mono-code">10:00 AM Today</span>
+              </div>
+              <p class="text-slate-600 mt-1"><strong>Curriculum & NAAC Review 2026</strong> is starting shortly in Conference Room B / Senate Room.</p>
+              <div class="mt-2.5 flex items-center gap-2">
+                <button onclick="navigateTo('my-meetings')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition">View Meeting</button>
+                <a href="https://meet.google.com" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition">Join Google Meet</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notification 2: MoM Ready for review -->
+          <div class="p-4 flex items-start gap-3.5 hover:bg-slate-50/80 transition">
+            <div class="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center font-bold shrink-0 text-base">
+              📝
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-bold text-slate-900">AI MoM Draft Generated & Ready for Review</span>
+                <span class="text-[10px] text-slate-400 font-mono-code">Yesterday, 4:30 PM</span>
+              </div>
+              <p class="text-slate-600 mt-1">Autonomous AI Agent has processed the minutes for <em>Computer Science Departmental Board Meeting</em>. Please review and sign digitally.</p>
+              <div class="mt-2.5 flex items-center gap-2">
+                <button onclick="navigateTo('mom-editor')" class="bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg text-xs transition">Review & Sign MoM</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notification 3: Google Workspace Sync -->
+          <div class="p-4 flex items-start gap-3.5 hover:bg-slate-50/80 transition">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center font-bold shrink-0 text-base">
+              📅
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-bold text-slate-900">Google Calendar & Timetable Synchronized</span>
+                <span class="text-[10px] text-slate-400 font-mono-code">2 hours ago</span>
+              </div>
+              <p class="text-slate-600 mt-1">All semester teaching schedules and institutional meetings have been synchronized with your IGDTUW Google Workspace account.</p>
+              <div class="mt-2.5 flex items-center gap-2">
+                <button onclick="navigateTo('calendar')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3 py-1.5 rounded-lg text-xs transition">View Calendar</button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -767,6 +1027,16 @@
           <button type="submit" class="bg-indigo-600 text-white font-bold py-2.5 px-5 rounded-xl">Save & Continue &rarr;</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- AI POPUP MESSAGE MODAL (Clean popup with only message and OK button) -->
+  <div id="ai-message-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 modal-backdrop bg-slate-900/40 backdrop-blur-xs">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 text-center space-y-5">
+      <div id="ai-message-content" class="text-sm font-semibold text-slate-800 leading-relaxed whitespace-pre-line"></div>
+      <div class="pt-2">
+        <button type="button" onclick="closeAIMessageModal()" class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-2.5 px-6 rounded-xl transition text-xs shadow-xs focus:outline-none cursor-pointer">OK</button>
+      </div>
     </div>
   </div>
 
