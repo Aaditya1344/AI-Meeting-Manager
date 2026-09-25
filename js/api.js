@@ -269,12 +269,16 @@ const API = {
       const targetUser = users.find(u => u.id === (body.userId || this.currentUserId)) || users[0];
       if (targetUser) {
         if (body.name) targetUser.name = body.name;
+        if (body.email) targetUser.email = body.email;
         if (body.designation) targetUser.designation = body.designation;
         if (body.department) targetUser.department = body.department;
-        if (body.employee_id || body.empId) targetUser.empId = body.employee_id || body.empId;
+        if (body.employee_id || body.empId) { targetUser.empId = body.employee_id || body.empId; targetUser.employee_id = body.employee_id || body.empId; }
         if (body.cabin) targetUser.cabin = body.cabin;
         if (body.phone) targetUser.phone = body.phone;
         if (body.bio) targetUser.bio = body.bio;
+        if (body.role && ['admin', 'organizer', 'faculty'].includes(body.role.toLowerCase())) {
+          targetUser.role = body.role.toLowerCase();
+        }
         targetUser.onboarded = true;
         setLocalStore('users', users);
         return { success: true, user: targetUser };

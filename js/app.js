@@ -1197,11 +1197,13 @@ async function saveAdminMemberChanges() {
   const memberId = document.getElementById('admin-member-id').value;
   if (!memberId) return;
 
+  const roleValue = (document.getElementById('admin-member-role').value || 'faculty').toLowerCase();
+
   const payload = {
     userId: memberId,
     name: document.getElementById('admin-member-name').value.trim(),
     email: document.getElementById('admin-member-email').value.trim(),
-    role: document.getElementById('admin-member-role').value,
+    role: roleValue,
     designation: document.getElementById('admin-member-designation').value,
     department: document.getElementById('admin-member-department').value,
     employee_id: document.getElementById('admin-member-empid').value.trim(),
@@ -1211,13 +1213,46 @@ async function saveAdminMemberChanges() {
   };
 
   try {
-    if (API.updateMember) {
-      await API.updateMember(payload);
-    } else {
+    let updated = false;
+
+    // 1. Try updateMember API
+    try {
+      if (API.updateMember) {
+        await API.updateMember(payload);
+        updated = true;
+      }
+    } catch (e1) {
+      console.warn('updateMember API attempt failed, trying assignRole fallback:', e1);
+    }
+
+    // 2. Assign role explicitly to guarantee role persistence
+    try {
+      if (API.assignRole) {
+        await API.assignRole(memberId, roleValue);
+        updated = true;
+      }
+    } catch (e2) {
+      console.warn('assignRole API attempt failed:', e2);
+    }
+
+    // 3. Fallback updateProfile
+    if (!updated && API.updateProfile) {
       await API.updateProfile(payload);
     }
 
-    alert(`✓ Data for ${payload.name} updated successfully!`);
+    // Invalidate local staff directory caches
+    staffDirectoryCache = [];
+
+    // If current logged-in user was modified, update session
+    if (currentUser && currentUser.id === memberId) {
+      currentUser.role = roleValue;
+      if (payload.name) currentUser.name = payload.name;
+      if (payload.designation) currentUser.designation = payload.designation;
+      if (payload.department) currentUser.department = payload.department;
+      updateUserUI();
+    }
+
+    alert(`✓ Member data and role for ${payload.name} updated to ${roleValue.toUpperCase()} successfully!`);
 
     // Reset back to read-only mode
     isMemberModalEditing = false;
@@ -1230,10 +1265,10 @@ async function saveAdminMemberChanges() {
       changeBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold border border-[#135106] text-[#135106] hover:bg-[#135106]/10 transition cursor-pointer flex items-center gap-1.5';
     }
 
-    // Refresh views
-    renderSettingsScreen();
-    if (currentScreen === 'admin') renderAdminScreen();
-    if (currentScreen === 'staff') renderStaffDirectory();
+    // Refresh views to immediately reflect the new role
+    await renderSettingsScreen();
+    if (currentScreen === 'admin') await renderAdminScreen();
+    if (currentScreen === 'staff') await renderStaffDirectory();
   } catch (err) {
     alert('Error saving member data: ' + err.message);
   }

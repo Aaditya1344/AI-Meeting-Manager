@@ -4,19 +4,21 @@ const { readDB } = require('../db/database');
  * Authentication Middleware: Extract current user from header or session
  */
 function authMiddleware(req, res, next) {
-  const userId = req.headers['x-user-id'] || req.query.userId || req.body.userId;
+  const headerUserId = req.headers['x-user-id'];
+  const queryUserId = req.query.authUserId || req.query.currentUserId;
   const db = readDB();
 
+  const userId = headerUserId || queryUserId;
   if (userId) {
-    const user = db.users.find(u => u.id === userId || u.email === userId);
+    const user = db.users.find(u => u.id === userId || (u.email && u.email.toLowerCase() === userId.toLowerCase()));
     if (user) {
       req.user = user;
       return next();
     }
   }
 
-  // Default fallback user for demo browsing: Dr. Rajesh Sharma (Organizer)
-  const defaultUser = db.users.find(u => u.id === 'usr_sharma') || db.users[0];
+  // Default fallback user for demo/admin browsing: Admin user or Dr. Rajesh Sharma
+  const defaultUser = db.users.find(u => u.role === 'admin' || u.id === 'usr_aditya' || u.id === 'usr_arun') || db.users.find(u => u.id === 'usr_sharma') || db.users[0];
   req.user = defaultUser;
   next();
 }

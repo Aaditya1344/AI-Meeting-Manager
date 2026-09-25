@@ -149,7 +149,7 @@ router.post('/switch-user', (req, res) => {
  * Update Profile Settings
  */
 router.post('/update-profile', (req, res) => {
-  const { userId, name, designation, department, employee_id, cabin, phone, bio } = req.body;
+  const { userId, name, email, designation, department, employee_id, cabin, phone, bio, role } = req.body;
   const db = readDB();
 
   const targetId = userId || (req.user && req.user.id);
@@ -158,13 +158,17 @@ router.post('/update-profile', (req, res) => {
     return res.status(404).json({ error: 'User not found' });
   }
 
-  if (name) user.name = name;
+  if (name) user.name = name.trim();
+  if (email) user.email = email.trim();
   if (designation) user.designation = designation;
   if (department) user.department = department;
   if (employee_id) user.employee_id = employee_id;
   if (cabin) user.cabin = cabin;
   if (phone) user.phone = phone;
   if (bio) user.bio = bio;
+  if (role && ['admin', 'organizer', 'faculty'].includes(role.toLowerCase())) {
+    user.role = role.toLowerCase();
+  }
   user.onboarded = true;
 
   writeDB(db);
