@@ -576,6 +576,15 @@ async function handleTimetableFileUpload(inputElement) {
 }
 
 // 3. Create Meeting 5-Step Wizard Flow
+let agendaItemsList = [
+  'OS lab restructuring & syllabus alignment',
+  'NAAC Metric 2.3 SSR documentation review'
+];
+
+let externalParticipants = [
+  { name: 'Prof. Arvind Sharma', email: 'arvind.sharma@iitd.ac.in', organization: 'IIT Delhi', designation: 'External Reviewer' }
+];
+
 function goToWizardStep(step) {
   currentWizardStep = step;
   document.getElementById('step-number-indicator').innerText = step;
@@ -586,7 +595,7 @@ function goToWizardStep(step) {
     if (stepEl) stepEl.classList.add('hidden');
     if (pillEl) {
       if (i <= step) {
-        pillEl.className = 'border-t-4 border-indigo-600 pt-1 text-[11px] font-bold text-indigo-700';
+        pillEl.className = 'border-t-4 border-[#135106] pt-1 text-[11px] font-bold text-[#135106]';
       } else {
         pillEl.className = 'border-t-4 border-slate-200 pt-1 text-[11px] font-bold text-slate-400';
       }
@@ -596,8 +605,11 @@ function goToWizardStep(step) {
   const activeStepEl = document.getElementById('wizard-step-' + step);
   if (activeStepEl) activeStepEl.classList.remove('hidden');
 
-  if (step === 2) {
+  if (step === 1) {
+    renderAgendaItems();
+  } else if (step === 2) {
     renderWizardGroupedStaff();
+    renderExternalParticipants();
   } else if (step === 3) {
     loadAvailabilityMatrix();
   } else if (step === 4) {
@@ -605,6 +617,53 @@ function goToWizardStep(step) {
   } else if (step === 5) {
     renderSummaryStep();
   }
+}
+
+// Dynamic Multiple Agenda Topics Controller (Optional)
+function renderAgendaItems() {
+  const container = document.getElementById('agenda-items-container');
+  if (!container) return;
+
+  if (agendaItemsList.length === 0) {
+    container.innerHTML = `
+      <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-slate-400 text-xs">
+        No agenda points added yet (optional). Click <strong>+ Add Agenda Point</strong> above to add discussion topics.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = agendaItemsList.map((item, idx) => `
+    <div class="flex items-center gap-2">
+      <span class="w-6 h-6 rounded-lg bg-[#135106]/10 text-[#135106] font-bold flex items-center justify-center text-[11px] shrink-0 font-mono-code">${idx + 1}</span>
+      <input type="text" value="${item.replace(/"/g, '&quot;')}" oninput="updateAgendaItem(${idx}, this.value)" placeholder="Enter agenda topic or deliberation point..." class="flex-1 p-2.5 rounded-xl border border-slate-300 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#135106]">
+      <button type="button" onclick="removeAgendaItem(${idx})" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition cursor-pointer" title="Remove agenda point">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+function addAgendaItem(defaultValue = '') {
+  agendaItemsList.push(defaultValue);
+  renderAgendaItems();
+  const inputs = document.querySelectorAll('#agenda-items-container input');
+  if (inputs.length > 0) inputs[inputs.length - 1].focus();
+}
+
+function removeAgendaItem(index) {
+  agendaItemsList.splice(index, 1);
+  renderAgendaItems();
+}
+
+function updateAgendaItem(index, value) {
+  if (agendaItemsList[index] !== undefined) {
+    agendaItemsList[index] = value;
+  }
+}
+
+function getAgendaItems() {
+  return agendaItemsList.map(a => a.trim()).filter(a => a.length > 0);
 }
 
 // Grouped Staff Selection Logic for Step 2
@@ -649,7 +708,7 @@ async function renderWizardGroupedStaff() {
       <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
         <div class="flex items-center justify-between pb-2 border-b border-slate-200">
           <label class="flex items-center gap-2.5 font-bold text-slate-900 cursor-pointer select-none">
-            <input type="checkbox" id="group-checkbox-${key}" ${allSelected ? 'checked' : ''} onchange="toggleStaffGroup('${key}', this.checked)" class="w-4 h-4 rounded text-indigo-600 cursor-pointer">
+            <input type="checkbox" id="group-checkbox-${key}" ${allSelected ? 'checked' : ''} onchange="toggleStaffGroup('${key}', this.checked)" class="w-4 h-4 rounded text-[#135106] cursor-pointer">
             <span class="text-xs">${group.title}</span>
             <span class="text-[10px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full">${group.staff.length}</span>
           </label>
@@ -659,11 +718,11 @@ async function renderWizardGroupedStaff() {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           ${group.staff.map(s => {
             const isChecked = selectedStaffIds.includes(s.id);
-            const borderClass = isChecked ? 'border-indigo-600 bg-indigo-50/40 ring-1 ring-indigo-500' : 'border-slate-200 bg-white hover:border-indigo-300';
+            const borderClass = isChecked ? 'border-[#135106] bg-[#dcf6f4]/40 ring-1 ring-[#135106]' : 'border-slate-200 bg-white hover:border-[#135106]/40';
             return `
               <label class="p-3 rounded-xl border ${borderClass} flex items-center justify-between cursor-pointer transition select-none">
                 <div class="flex items-center gap-2.5 min-w-0">
-                  <input type="checkbox" value="${s.id}" ${isChecked ? 'checked' : ''} onchange="toggleSingleStaff('${s.id}')" class="w-4 h-4 rounded text-indigo-600">
+                  <input type="checkbox" value="${s.id}" ${isChecked ? 'checked' : ''} onchange="toggleSingleStaff('${s.id}')" class="w-4 h-4 rounded text-[#135106]">
                   <div class="min-w-0">
                     <p class="font-bold text-slate-900 text-xs truncate">${s.name}</p>
                     <p class="text-[11px] text-slate-500 truncate">${s.designation || s.department}</p>
@@ -714,10 +773,80 @@ function toggleSingleStaff(staffId) {
   renderWizardGroupedStaff();
 }
 
+// External Participants Controller (Manual Entry)
+function renderExternalParticipants() {
+  const container = document.getElementById('external-participants-container');
+  if (!container) return;
+
+  if (externalParticipants.length === 0) {
+    container.innerHTML = `
+      <div class="p-3.5 bg-white border border-slate-200 rounded-xl text-center text-slate-400 text-xs">
+        No external members added yet. Click <strong>+ Add External Member</strong> above to include external reviewers, experts, or guests.
+      </div>
+    `;
+    updateSelectedCountBadge();
+    return;
+  }
+
+  container.innerHTML = externalParticipants.map((ext, idx) => `
+    <div class="bg-white border border-slate-200 rounded-xl p-3.5 space-y-2.5 shadow-2xs">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-6 h-6 rounded-lg bg-[#2a7f7b] text-white font-bold flex items-center justify-center text-[10px] shrink-0">EXT</span>
+          <span class="font-bold text-xs text-slate-900">External Member #${idx + 1}</span>
+        </div>
+        <button type="button" onclick="removeExternalParticipant(${idx})" class="text-rose-600 hover:text-rose-800 text-xs font-bold flex items-center gap-1 hover:underline cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+          <span>Remove</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+        <div>
+          <label class="block font-bold text-slate-600 text-[11px] mb-0.5">Full Name *</label>
+          <input type="text" value="${ext.name.replace(/"/g, '&quot;')}" oninput="updateExternalParticipantField(${idx}, 'name', this.value)" placeholder="e.g., Dr. R. K. Mittal" class="w-full p-2 rounded-lg border border-slate-300 font-medium focus:outline-none focus:ring-1 focus:ring-[#135106]">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 text-[11px] mb-0.5">Email Address *</label>
+          <input type="email" value="${ext.email.replace(/"/g, '&quot;')}" oninput="updateExternalParticipantField(${idx}, 'email', this.value)" placeholder="e.g., rkmittal@external.org" class="w-full p-2 rounded-lg border border-slate-300 font-mono-code focus:outline-none focus:ring-1 focus:ring-[#135106]">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 text-[11px] mb-0.5">Organization / University</label>
+          <input type="text" value="${ext.organization.replace(/"/g, '&quot;')}" oninput="updateExternalParticipantField(${idx}, 'organization', this.value)" placeholder="e.g., IIT Delhi / Industry" class="w-full p-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#135106]">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 text-[11px] mb-0.5">Role / Designation</label>
+          <input type="text" value="${ext.designation.replace(/"/g, '&quot;')}" oninput="updateExternalParticipantField(${idx}, 'designation', this.value)" placeholder="e.g., External Expert" class="w-full p-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#135106]">
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  updateSelectedCountBadge();
+}
+
+function addExternalParticipant(data = { name: '', email: '', organization: '', designation: '' }) {
+  externalParticipants.push(data);
+  renderExternalParticipants();
+}
+
+function removeExternalParticipant(idx) {
+  externalParticipants.splice(idx, 1);
+  renderExternalParticipants();
+}
+
+function updateExternalParticipantField(idx, field, value) {
+  if (externalParticipants[idx]) {
+    externalParticipants[idx][field] = value;
+    updateSelectedCountBadge();
+  }
+}
+
 function updateSelectedCountBadge() {
   const badge = document.getElementById('selected-participants-count-badge');
   if (badge) {
-    badge.innerText = `${selectedStaffIds.length} Selected`;
+    const validExtCount = externalParticipants.filter(p => p.name && p.name.trim()).length;
+    badge.innerText = `${selectedStaffIds.length + validExtCount} Selected (${selectedStaffIds.length} Faculty + ${validExtCount} External)`;
   }
 }
 
@@ -788,12 +917,12 @@ function renderRecommendations() {
 
   container.innerHTML = recs.map((rec, idx) => {
     const isChecked = idx === 0 ? 'checked' : '';
-    const borderClass = idx === 0 ? 'border-2 border-indigo-600 bg-indigo-50/30' : 'border border-slate-200 bg-white';
+    const borderClass = idx === 0 ? 'border-2 border-[#135106] bg-[#dcf6f4]/30' : 'border border-slate-200 bg-white';
     
     return `
-      <label class="p-4 rounded-xl ${borderClass} flex items-start justify-between cursor-pointer transition hover:bg-indigo-50/50">
+      <label class="p-4 rounded-xl ${borderClass} flex items-start justify-between cursor-pointer transition hover:bg-[#dcf6f4]/20">
         <div class="flex items-start gap-3.5">
-          <input type="radio" name="recommended_slot" ${isChecked} value="${rec.start}" class="mt-1 w-4 h-4 text-indigo-600" onchange="currentSelectedSlot = '${rec.start}'">
+          <input type="radio" name="recommended_slot" ${isChecked} value="${rec.start}" class="mt-1 w-4 h-4 text-[#135106]" onchange="currentSelectedSlot = '${rec.start}'">
           <div>
             <div class="flex items-center gap-2">
               <span class="text-sm font-extrabold text-slate-900">${rec.timeRange}</span>
@@ -815,33 +944,56 @@ function renderSummaryStep() {
   const date = document.getElementById('meet-date').value;
   const location = document.getElementById('meet-location').value;
   const duration = document.getElementById('meet-duration').value;
+  const agendas = getAgendaItems();
+  const validExt = externalParticipants.filter(p => p.name && p.name.trim() && p.email && p.email.trim());
 
-  document.getElementById('summary-title').innerText = title;
-  document.getElementById('summary-date').innerText = date;
-  document.getElementById('summary-venue').innerText = location;
-  document.getElementById('summary-duration').innerText = `${duration} mins`;
+  const titleEl = document.getElementById('summary-title');
+  const dateEl = document.getElementById('summary-date');
+  const venueEl = document.getElementById('summary-venue');
+  const durEl = document.getElementById('summary-duration');
+
+  if (titleEl) titleEl.innerText = title;
+  if (dateEl) dateEl.innerText = date;
+  if (venueEl) venueEl.innerText = location;
+  if (durEl) durEl.innerText = `${duration} mins`;
+
+  const summaryDetails = document.getElementById('summary-extra-details');
+  if (summaryDetails) {
+    let html = `
+      <div class="mt-3 pt-3 border-t border-slate-200 space-y-2 text-xs">
+        <p><strong>Participants:</strong> ${selectedStaffIds.length} IGDTUW Faculty ${validExt.length > 0 ? `+ ${validExt.length} External Member(s) (${validExt.map(e => e.name + (e.organization ? ' - ' + e.organization : '')).join(', ')})` : ''}</p>
+        ${agendas.length > 0 ? `<div class="mt-1"><strong class="block text-slate-800 font-bold">Agenda Topics (${agendas.length}):</strong><ul class="list-disc pl-4 space-y-0.5 text-slate-600 mt-0.5">${agendas.map(a => `<li>${a}</li>`).join('')}</ul></div>` : '<p class="text-slate-400 italic">No agenda points specified (Optional)</p>'}
+      </div>
+    `;
+    summaryDetails.innerHTML = html;
+  }
 }
 
 async function finalizeAndScheduleMeeting() {
   const title = document.getElementById('meet-title').value;
-  const description = document.getElementById('meet-agenda').value;
   const date = document.getElementById('meet-date').value;
   const start_time = currentSelectedSlot || document.getElementById('meet-time').value || '10:00';
   const duration_minutes = document.getElementById('meet-duration').value;
   const location = document.getElementById('meet-location').value;
+  const agendas = getAgendaItems();
+  const description = agendas.length > 0 ? agendas.map((a, i) => `${i + 1}. ${a}`).join('\n') : '';
+  const validExt = externalParticipants.filter(p => p.name && p.name.trim() && p.email && p.email.trim());
 
   try {
     await API.createMeeting({
       title,
       description,
+      agendaItems: agendas,
       date,
       start_time,
       duration_minutes,
       location,
-      participantIds: selectedStaffIds
+      participantIds: selectedStaffIds,
+      externalParticipants: validExt
     });
 
-    alert(`✓ Success! Meeting '${title}' scheduled for ${date} at ${start_time}.\n\n• Google Calendar invites dispatched.\n• AI Agent initialized for 30m reminder & post-meeting MoM automation.`);
+    const extText = validExt.length > 0 ? `\n• External guest invites sent to: ${validExt.map(e => e.name + ' (' + e.email + ')').join(', ')}` : '';
+    alert(`✓ Success! Meeting '${title}' scheduled for ${date} at ${start_time}.\n\n• Google Calendar invites dispatched to ${selectedStaffIds.length} university faculty.${extText}\n• AI Agent initialized for 30m reminder & post-meeting MoM automation.`);
     navigateTo('my-meetings');
     goToWizardStep(1);
   } catch (err) {
@@ -992,7 +1144,7 @@ async function renderAdminScreen() {
         <td class="p-3 text-emerald-700 font-medium">Uploaded ✓</td>
         <td class="p-3 text-emerald-700 font-medium">Connected ✓</td>
         <td class="p-3 text-right">
-          <button class="text-[#135106] hover:underline px-2 font-bold cursor-pointer" onclick="openAdminMemberModal('${s.id}')">Edit Details</button>
+          <button class="text-[#135106] hover:underline px-2 font-bold cursor-pointer" onclick="openAdminMemberModal('${s.id}')">View Details</button>
         </td>
       </tr>
     `).join('');
@@ -1087,8 +1239,7 @@ function setupEventListeners() {
   }
 }
 
-// Admin Member Data Access & Editing Controller
-let isMemberModalEditing = false;
+// Admin Member Data Access Modal Controller (Read-Only Verification)
 let currentAdminMember = null;
 
 async function openAdminMemberModal(memberId) {
@@ -1099,13 +1250,15 @@ async function openAdminMemberModal(memberId) {
     if (!member) return;
 
     currentAdminMember = member;
-    isMemberModalEditing = false;
 
     const idInput = document.getElementById('admin-member-id');
     const nameInput = document.getElementById('admin-member-name');
     const emailInput = document.getElementById('admin-member-email');
+    const roleTextInput = document.getElementById('admin-member-role-text');
     const roleSelect = document.getElementById('admin-member-role');
+    const desigTextInput = document.getElementById('admin-member-designation-text');
     const desigSelect = document.getElementById('admin-member-designation');
+    const deptTextInput = document.getElementById('admin-member-department-text');
     const deptSelect = document.getElementById('admin-member-department');
     const empidInput = document.getElementById('admin-member-empid');
     const cabinInput = document.getElementById('admin-member-cabin');
@@ -1115,9 +1268,19 @@ async function openAdminMemberModal(memberId) {
     if (idInput) idInput.value = member.id || '';
     if (nameInput) nameInput.value = member.name || '';
     if (emailInput) emailInput.value = member.email || '';
+    
+    const displayRole = (member.role || 'faculty').toUpperCase();
+    if (roleTextInput) roleTextInput.value = displayRole;
     if (roleSelect) roleSelect.value = member.role || 'faculty';
+
+    const displayDesig = member.designation || 'Faculty';
+    if (desigTextInput) desigTextInput.value = displayDesig;
     if (desigSelect && member.designation) desigSelect.value = member.designation;
+
+    const displayDept = member.department || 'Academic Administration';
+    if (deptTextInput) deptTextInput.value = displayDept;
     if (deptSelect && member.department) deptSelect.value = member.department;
+
     if (empidInput) empidInput.value = member.empId || member.employee_id || '';
     if (cabinInput) cabinInput.value = member.cabin || '';
     if (phoneInput) phoneInput.value = member.phone || '';
@@ -1130,15 +1293,6 @@ async function openAdminMemberModal(memberId) {
     const titleEl = document.getElementById('admin-member-modal-title');
     if (titleEl) titleEl.innerText = member.name || 'Member Details';
 
-    setAdminMemberFieldsDisabled(true);
-
-    const changeBtn = document.getElementById('admin-member-change-btn');
-    const changeBtnText = document.getElementById('admin-member-change-btn-text');
-    if (changeBtn && changeBtnText) {
-      changeBtnText.innerText = 'Change';
-      changeBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold border border-[#135106] text-[#135106] hover:bg-[#135106]/10 transition cursor-pointer flex items-center gap-1.5';
-    }
-
     const modal = document.getElementById('admin-member-modal');
     if (modal) modal.classList.remove('hidden');
   } catch (err) {
@@ -1146,138 +1300,9 @@ async function openAdminMemberModal(memberId) {
   }
 }
 
-function setAdminMemberFieldsDisabled(disabled) {
-  const fieldIds = [
-    'admin-member-name',
-    'admin-member-email',
-    'admin-member-role',
-    'admin-member-designation',
-    'admin-member-department',
-    'admin-member-empid',
-    'admin-member-cabin',
-    'admin-member-phone',
-    'admin-member-bio'
-  ];
-  fieldIds.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.disabled = disabled;
-      if (disabled) {
-        el.classList.add('bg-slate-100', 'text-slate-700');
-        el.classList.remove('bg-white', 'ring-2');
-      } else {
-        el.classList.remove('bg-slate-100', 'text-slate-700');
-        el.classList.add('bg-white');
-      }
-    }
-  });
-}
-
-async function toggleAdminMemberEditing() {
-  const changeBtn = document.getElementById('admin-member-change-btn');
-  const changeBtnText = document.getElementById('admin-member-change-btn-text');
-
-  if (!isMemberModalEditing) {
-    // Enable editing on all fields in the popup box
-    isMemberModalEditing = true;
-    setAdminMemberFieldsDisabled(false);
-    if (changeBtnText) changeBtnText.innerText = 'Save Changes';
-    if (changeBtn) {
-      changeBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-[#135106] hover:bg-[#0e3d04] text-white shadow-xs transition cursor-pointer flex items-center gap-1.5';
-    }
-    const nameInput = document.getElementById('admin-member-name');
-    if (nameInput) nameInput.focus();
-  } else {
-    // Save the edited fields
-    await saveAdminMemberChanges();
-  }
-}
-
-async function saveAdminMemberChanges() {
-  const memberId = document.getElementById('admin-member-id').value;
-  if (!memberId) return;
-
-  const roleValue = (document.getElementById('admin-member-role').value || 'faculty').toLowerCase();
-
-  const payload = {
-    userId: memberId,
-    name: document.getElementById('admin-member-name').value.trim(),
-    email: document.getElementById('admin-member-email').value.trim(),
-    role: roleValue,
-    designation: document.getElementById('admin-member-designation').value,
-    department: document.getElementById('admin-member-department').value,
-    employee_id: document.getElementById('admin-member-empid').value.trim(),
-    cabin: document.getElementById('admin-member-cabin').value.trim(),
-    phone: document.getElementById('admin-member-phone').value.trim(),
-    bio: document.getElementById('admin-member-bio').value.trim()
-  };
-
-  try {
-    let updated = false;
-
-    // 1. Try updateMember API
-    try {
-      if (API.updateMember) {
-        await API.updateMember(payload);
-        updated = true;
-      }
-    } catch (e1) {
-      console.warn('updateMember API attempt failed, trying assignRole fallback:', e1);
-    }
-
-    // 2. Assign role explicitly to guarantee role persistence
-    try {
-      if (API.assignRole) {
-        await API.assignRole(memberId, roleValue);
-        updated = true;
-      }
-    } catch (e2) {
-      console.warn('assignRole API attempt failed:', e2);
-    }
-
-    // 3. Fallback updateProfile
-    if (!updated && API.updateProfile) {
-      await API.updateProfile(payload);
-    }
-
-    // Invalidate local staff directory caches
-    staffDirectoryCache = [];
-
-    // If current logged-in user was modified, update session
-    if (currentUser && currentUser.id === memberId) {
-      currentUser.role = roleValue;
-      if (payload.name) currentUser.name = payload.name;
-      if (payload.designation) currentUser.designation = payload.designation;
-      if (payload.department) currentUser.department = payload.department;
-      updateUserUI();
-    }
-
-    alert(`✓ Member data and role for ${payload.name} updated to ${roleValue.toUpperCase()} successfully!`);
-
-    // Reset back to read-only mode
-    isMemberModalEditing = false;
-    setAdminMemberFieldsDisabled(true);
-
-    const changeBtn = document.getElementById('admin-member-change-btn');
-    const changeBtnText = document.getElementById('admin-member-change-btn-text');
-    if (changeBtn && changeBtnText) {
-      changeBtnText.innerText = 'Change';
-      changeBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold border border-[#135106] text-[#135106] hover:bg-[#135106]/10 transition cursor-pointer flex items-center gap-1.5';
-    }
-
-    // Refresh views to immediately reflect the new role
-    await renderSettingsScreen();
-    if (currentScreen === 'admin') await renderAdminScreen();
-    if (currentScreen === 'staff') await renderStaffDirectory();
-  } catch (err) {
-    alert('Error saving member data: ' + err.message);
-  }
-}
-
 function closeAdminMemberModal() {
   const modal = document.getElementById('admin-member-modal');
   if (modal) modal.classList.add('hidden');
-  isMemberModalEditing = false;
 }
 
 async function renderSettingsScreen() {
@@ -1285,7 +1310,9 @@ async function renderSettingsScreen() {
   
   const nameInput = document.getElementById('settings-name');
   const emailInput = document.getElementById('settings-email');
+  const desigTextInput = document.getElementById('settings-designation-text');
   const desigSelect = document.getElementById('settings-designation');
+  const deptTextInput = document.getElementById('settings-department-text');
   const deptSelect = document.getElementById('settings-department');
   const empidInput = document.getElementById('settings-empid');
   const cabinInput = document.getElementById('settings-cabin');
@@ -1294,8 +1321,15 @@ async function renderSettingsScreen() {
 
   if (nameInput) nameInput.value = currentUser.name || '';
   if (emailInput) emailInput.value = currentUser.email || '';
+  
+  const displayDesig = currentUser.designation || 'Faculty';
+  if (desigTextInput) desigTextInput.value = displayDesig;
   if (desigSelect && currentUser.designation) desigSelect.value = currentUser.designation;
+
+  const displayDept = currentUser.department || 'Academic Administration';
+  if (deptTextInput) deptTextInput.value = displayDept;
   if (deptSelect && currentUser.department) deptSelect.value = currentUser.department;
+
   if (empidInput) empidInput.value = currentUser.empId || currentUser.employee_id || '';
   if (cabinInput) cabinInput.value = currentUser.cabin || '';
   if (phoneInput) phoneInput.value = currentUser.phone || '';
