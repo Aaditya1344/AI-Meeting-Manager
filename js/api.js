@@ -489,6 +489,24 @@ const API = {
       return { success: false, error: 'User not found' };
     }
 
+    if (endpoint === '/admin/update-member') {
+      const { userId, name, email, designation, department, employee_id, cabin, phone, bio, role } = body;
+      const user = users.find(u => u.id === userId);
+      if (!user) return { success: false, error: 'Member not found' };
+      if (name !== undefined) user.name = name;
+      if (email !== undefined) user.email = email;
+      if (designation !== undefined) user.designation = designation;
+      if (department !== undefined) user.department = department;
+      if (employee_id !== undefined) { user.employee_id = employee_id; user.empId = employee_id; }
+      if (cabin !== undefined) user.cabin = cabin;
+      if (phone !== undefined) user.phone = phone;
+      if (bio !== undefined) user.bio = bio;
+      if (role !== undefined) user.role = role;
+      user.onboarded = true;
+      setLocalStore('users', users);
+      return { success: true, message: `Member ${user.name} data updated successfully`, user };
+    }
+
     // 11. AI Activity & Logs
     if (endpoint === '/ai/logs' || endpoint === '/ai/activity') {
       return { success: true, logs: aiLogs, activities: aiLogs };
@@ -646,6 +664,9 @@ const API = {
   },
   assignRole(userId, role) {
     return this.request('/admin/assign-role', { method: 'POST', body: JSON.stringify({ userId, role }) });
+  },
+  updateMember(payload) {
+    return this.request('/admin/update-member', { method: 'POST', body: JSON.stringify(payload) });
   }
 };
 

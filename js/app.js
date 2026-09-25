@@ -892,15 +892,21 @@ async function renderMoMScreen() {
   const container = document.getElementById('mom-cards-container');
   if (!container) return;
 
-  container.innerHTML = data.moms.map(m => `
-    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4 hover:border-indigo-300 transition">
+  container.innerHTML = data.moms.map(m => {
+    const isApproved = (m.status || '').toLowerCase().includes('approved') || (m.status || '').toLowerCase().includes('signed');
+    const badgeClass = isApproved 
+      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold' 
+      : 'bg-amber-50 text-amber-800 border border-amber-200 font-bold';
+
+    return `
+    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4 hover:border-emerald-300 transition">
       <div class="flex items-start justify-between">
         <div>
-          <span class="text-[10px] font-bold uppercase bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded">${m.status.toUpperCase()}</span>
+          <span class="text-[10px] uppercase px-2 py-0.5 rounded ${badgeClass}">${m.status.toUpperCase()}</span>
           <h3 class="text-sm font-bold text-slate-900 mt-1.5">${m.title}</h3>
           <p class="text-xs text-slate-500">${m.date} • ${m.time}</p>
         </div>
-        <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold text-xs">DOC</span>
+        <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xs">DOC</span>
       </div>
       <div class="text-xs text-slate-600 space-y-1 bg-slate-50 p-3 rounded-xl border border-slate-100">
         <p><span class="font-bold text-slate-800">Attendees:</span> ${m.attendees.join(', ')}</p>
@@ -910,11 +916,12 @@ async function renderMoMScreen() {
         <span class="text-[11px] text-slate-400">Ref: ${m.reference_no}</span>
         <div class="flex items-center gap-2">
           <button onclick="openMoMEditor('${m.id}')" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">Edit MoM</button>
-          <button onclick="approveMoM('${m.id}')" class="px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition">Approve</button>
+          <button onclick="approveMoM('${m.id}')" class="px-3 py-1.5 text-xs font-semibold text-white bg-[#135106] hover:bg-[#0e3d04] rounded-lg transition">Approve</button>
         </div>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 async function approveMoM(momId) {
@@ -973,14 +980,19 @@ async function renderAdminScreen() {
     if (!tbody) return;
 
     tbody.innerHTML = visibleStaff.map(s => `
-      <tr>
-        <td class="p-3 font-bold text-slate-900">${s.name}</td>
-        <td class="p-3">${s.department || 'Academic'}</td>
+      <tr class="hover:bg-slate-50/70 transition">
+        <td class="p-3 font-bold text-slate-900 cursor-pointer" onclick="openAdminMemberModal('${s.id}')">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-full bg-[#135106] text-white flex items-center justify-center font-bold text-[10px]">${(s.name || 'U').substring(0, 2).toUpperCase()}</span>
+            <span>${s.name}</span>
+          </div>
+        </td>
+        <td class="p-3 text-slate-600">${s.department || 'Academic'}</td>
         <td class="p-3"><span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-bold text-[10px] uppercase">${s.role}</span></td>
         <td class="p-3 text-emerald-700 font-medium">Uploaded ✓</td>
         <td class="p-3 text-emerald-700 font-medium">Connected ✓</td>
         <td class="p-3 text-right">
-          <button class="text-indigo-600 hover:text-indigo-900 px-2 font-bold" onclick="promptRoleChange('${s.id}', '${s.name}')">Edit Role</button>
+          <button class="text-[#135106] hover:underline px-2 font-bold cursor-pointer" onclick="openAdminMemberModal('${s.id}')">Edit Details</button>
         </td>
       </tr>
     `).join('');
@@ -989,31 +1001,27 @@ async function renderAdminScreen() {
   }
 }
 
-async function promptRoleChange(userId, userName) {
-  const newRole = prompt(`Assign new role for ${userName} (admin | organizer | faculty):`, 'organizer');
-  if (newRole && ['admin', 'organizer', 'faculty'].includes(newRole.toLowerCase())) {
-    try {
-      await API.assignRole(userId, newRole.toLowerCase());
-      alert(`Role for ${userName} updated to ${newRole}.`);
-      renderAdminScreen();
-    } catch (err) {
-      alert('Error updating role: ' + err.message);
-    }
-  }
-}
-
+// 8. Meetings List
 // 8. Meetings List
 async function renderMeetingsList() {
   const data = await API.getMeetings();
   const tbody = document.getElementById('my-meetings-tbody');
-  tbody.innerHTML = data.meetings.map(m => `
+  if (!tbody) return;
+
+  tbody.innerHTML = data.meetings.map(m => {
+    const isApproved = (m.momStatus || '').toLowerCase().includes('approved') || (m.momStatus || '').toLowerCase().includes('signed');
+    const badgeClass = isApproved 
+      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold' 
+      : 'bg-amber-50 text-amber-700 border border-amber-200 font-semibold';
+
+    return `
     <tr class="hover:bg-slate-50/60">
       <td class="p-3">
         <span class="font-bold text-slate-900 block">${m.title}</span>
         <span class="text-[11px] text-slate-400">${m.description}</span>
       </td>
       <td class="p-3">
-        <span class="font-bold text-indigo-700 block">${m.date}, ${m.start_time}</span>
+        <span class="font-bold text-[#135106] block">${m.date}, ${m.start_time}</span>
         <span class="text-[10px] text-slate-400">${m.duration_minutes} mins</span>
       </td>
       <td class="p-3">
@@ -1024,13 +1032,14 @@ async function renderMeetingsList() {
         <span class="px-2 py-0.5 rounded bg-purple-50 text-purple-700 font-semibold text-[10px] border border-purple-200">${m.location}</span>
       </td>
       <td class="p-3">
-        <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold text-[10px] border border-amber-200">${m.momStatus.toUpperCase()}</span>
+        <span class="px-2 py-0.5 rounded ${badgeClass} text-[10px]">${m.momStatus.toUpperCase()}</span>
       </td>
       <td class="p-3 text-right">
-        <button onclick="navigateTo('meeting-details')" class="text-indigo-600 hover:text-indigo-800 font-bold">Details</button>
+        <button onclick="navigateTo('meeting-details')" class="text-[#135106] hover:text-[#0e3d04] font-bold">Details</button>
       </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 }
 
 // Onboarding Modal Submission
@@ -1078,7 +1087,165 @@ function setupEventListeners() {
   }
 }
 
-function renderSettingsScreen() {
+// Admin Member Data Access & Editing Controller
+let isMemberModalEditing = false;
+let currentAdminMember = null;
+
+async function openAdminMemberModal(memberId) {
+  try {
+    const staffRes = await API.getStaff();
+    const members = staffRes.users || [];
+    const member = members.find(u => u.id === memberId) || members[0];
+    if (!member) return;
+
+    currentAdminMember = member;
+    isMemberModalEditing = false;
+
+    const idInput = document.getElementById('admin-member-id');
+    const nameInput = document.getElementById('admin-member-name');
+    const emailInput = document.getElementById('admin-member-email');
+    const roleSelect = document.getElementById('admin-member-role');
+    const desigSelect = document.getElementById('admin-member-designation');
+    const deptSelect = document.getElementById('admin-member-department');
+    const empidInput = document.getElementById('admin-member-empid');
+    const cabinInput = document.getElementById('admin-member-cabin');
+    const phoneInput = document.getElementById('admin-member-phone');
+    const bioInput = document.getElementById('admin-member-bio');
+
+    if (idInput) idInput.value = member.id || '';
+    if (nameInput) nameInput.value = member.name || '';
+    if (emailInput) emailInput.value = member.email || '';
+    if (roleSelect) roleSelect.value = member.role || 'faculty';
+    if (desigSelect && member.designation) desigSelect.value = member.designation;
+    if (deptSelect && member.department) deptSelect.value = member.department;
+    if (empidInput) empidInput.value = member.empId || member.employee_id || '';
+    if (cabinInput) cabinInput.value = member.cabin || '';
+    if (phoneInput) phoneInput.value = member.phone || '';
+    if (bioInput) bioInput.value = member.bio || '';
+
+    const avatarEl = document.getElementById('admin-member-modal-avatar');
+    if (avatarEl) {
+      avatarEl.innerText = (member.name || 'MB').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    }
+    const titleEl = document.getElementById('admin-member-modal-title');
+    if (titleEl) titleEl.innerText = member.name || 'Member Details';
+
+    setAdminMemberFieldsDisabled(true);
+
+    const changeBtn = document.getElementById('admin-member-change-btn');
+    const changeBtnText = document.getElementById('admin-member-change-btn-text');
+    if (changeBtn && changeBtnText) {
+      changeBtnText.innerText = 'Change';
+      changeBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold border border-[#135106] text-[#135106] hover:bg-[#135106]/10 transition cursor-pointer flex items-center gap-1.5';
+    }
+
+    const modal = document.getElementById('admin-member-modal');
+    if (modal) modal.classList.remove('hidden');
+  } catch (err) {
+    alert('Error opening member modal: ' + err.message);
+  }
+}
+
+function setAdminMemberFieldsDisabled(disabled) {
+  const fieldIds = [
+    'admin-member-name',
+    'admin-member-email',
+    'admin-member-role',
+    'admin-member-designation',
+    'admin-member-department',
+    'admin-member-empid',
+    'admin-member-cabin',
+    'admin-member-phone',
+    'admin-member-bio'
+  ];
+  fieldIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.disabled = disabled;
+      if (disabled) {
+        el.classList.add('bg-slate-100', 'text-slate-700');
+        el.classList.remove('bg-white', 'ring-2');
+      } else {
+        el.classList.remove('bg-slate-100', 'text-slate-700');
+        el.classList.add('bg-white');
+      }
+    }
+  });
+}
+
+async function toggleAdminMemberEditing() {
+  const changeBtn = document.getElementById('admin-member-change-btn');
+  const changeBtnText = document.getElementById('admin-member-change-btn-text');
+
+  if (!isMemberModalEditing) {
+    // Enable editing on all fields in the popup box
+    isMemberModalEditing = true;
+    setAdminMemberFieldsDisabled(false);
+    if (changeBtnText) changeBtnText.innerText = 'Save Changes';
+    if (changeBtn) {
+      changeBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-[#135106] hover:bg-[#0e3d04] text-white shadow-xs transition cursor-pointer flex items-center gap-1.5';
+    }
+    const nameInput = document.getElementById('admin-member-name');
+    if (nameInput) nameInput.focus();
+  } else {
+    // Save the edited fields
+    await saveAdminMemberChanges();
+  }
+}
+
+async function saveAdminMemberChanges() {
+  const memberId = document.getElementById('admin-member-id').value;
+  if (!memberId) return;
+
+  const payload = {
+    userId: memberId,
+    name: document.getElementById('admin-member-name').value.trim(),
+    email: document.getElementById('admin-member-email').value.trim(),
+    role: document.getElementById('admin-member-role').value,
+    designation: document.getElementById('admin-member-designation').value,
+    department: document.getElementById('admin-member-department').value,
+    employee_id: document.getElementById('admin-member-empid').value.trim(),
+    cabin: document.getElementById('admin-member-cabin').value.trim(),
+    phone: document.getElementById('admin-member-phone').value.trim(),
+    bio: document.getElementById('admin-member-bio').value.trim()
+  };
+
+  try {
+    if (API.updateMember) {
+      await API.updateMember(payload);
+    } else {
+      await API.updateProfile(payload);
+    }
+
+    alert(`✓ Data for ${payload.name} updated successfully!`);
+
+    // Reset back to read-only mode
+    isMemberModalEditing = false;
+    setAdminMemberFieldsDisabled(true);
+
+    const changeBtn = document.getElementById('admin-member-change-btn');
+    const changeBtnText = document.getElementById('admin-member-change-btn-text');
+    if (changeBtn && changeBtnText) {
+      changeBtnText.innerText = 'Change';
+      changeBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold border border-[#135106] text-[#135106] hover:bg-[#135106]/10 transition cursor-pointer flex items-center gap-1.5';
+    }
+
+    // Refresh views
+    renderSettingsScreen();
+    if (currentScreen === 'admin') renderAdminScreen();
+    if (currentScreen === 'staff') renderStaffDirectory();
+  } catch (err) {
+    alert('Error saving member data: ' + err.message);
+  }
+}
+
+function closeAdminMemberModal() {
+  const modal = document.getElementById('admin-member-modal');
+  if (modal) modal.classList.add('hidden');
+  isMemberModalEditing = false;
+}
+
+async function renderSettingsScreen() {
   if (!currentUser) return;
   
   const nameInput = document.getElementById('settings-name');
@@ -1098,6 +1265,52 @@ function renderSettingsScreen() {
   if (cabinInput) cabinInput.value = currentUser.cabin || '';
   if (phoneInput) phoneInput.value = currentUser.phone || '';
   if (bioInput) bioInput.value = currentUser.bio || '';
+
+  // Admin access check to show Institutional Members Data Access list
+  const isAdmin = currentUser.role === 'admin' || 
+    currentUser.email.toLowerCase().includes('aditya') || 
+    currentUser.email.toLowerCase().includes('arun') ||
+    currentUser.name.toLowerCase().includes('aditya') ||
+    currentUser.name.toLowerCase().includes('arun');
+
+  const adminPanel = document.getElementById('settings-admin-members-panel');
+  const membersContainer = document.getElementById('settings-admin-members-list');
+  const countBadge = document.getElementById('settings-admin-member-count');
+
+  if (adminPanel) {
+    if (isAdmin) {
+      adminPanel.classList.remove('hidden');
+      if (membersContainer) {
+        membersContainer.innerHTML = '<div class="col-span-3 text-center p-4 text-slate-400">Loading member records...</div>';
+        try {
+          const staffRes = await API.getStaff();
+          const members = staffRes.users || [];
+          if (countBadge) countBadge.innerText = `${members.length} Institutional Members`;
+
+          membersContainer.innerHTML = members.map(m => `
+            <div onclick="openAdminMemberModal('${m.id}')" class="p-3.5 rounded-xl border border-slate-200 hover:border-[#135106] bg-slate-50/50 hover:bg-[#dcf6f4]/40 cursor-pointer transition flex items-center gap-3 group shadow-2xs">
+              <div class="w-10 h-10 rounded-xl bg-[#135106] text-white font-bold flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition">
+                ${(m.name || 'MB').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-1">
+                  <h4 class="font-bold text-slate-900 text-xs truncate group-hover:text-[#135106]">${m.name}</h4>
+                  <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${m.role === 'admin' ? 'bg-[#135106] text-white' : 'bg-indigo-50 text-indigo-700'}">${(m.role || 'faculty').toUpperCase()}</span>
+                </div>
+                <p class="text-[11px] text-slate-500 truncate">${m.designation || 'Faculty'}</p>
+                <p class="text-[10px] text-slate-400 font-mono-code truncate">${m.email}</p>
+              </div>
+              <svg class="w-4 h-4 text-slate-300 group-hover:text-[#135106] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </div>
+          `).join('');
+        } catch (e) {
+          membersContainer.innerHTML = '<div class="col-span-3 text-rose-500 p-2">Failed to load member records.</div>';
+        }
+      }
+    } else {
+      adminPanel.classList.add('hidden');
+    }
+  }
 }
 
 async function saveProfileSettings(e) {
@@ -1132,40 +1345,22 @@ async function saveProfileSettings(e) {
   }
 }
 
-// 9. Interactive Calendar & Master Schedule Renderer
+// 9. Interactive Master Calendar & Schedule Renderer (Shows only the logged-in person's personal schedule)
 async function renderCalendarScreen() {
   const container = document.getElementById('calendar-grid-container');
   if (!container) return;
 
-  container.innerHTML = '<div class="p-8 text-center text-xs text-slate-500"><span class="animate-spin text-base">⏳</span><br>Loading timetable and calendar events...</div>';
+  container.innerHTML = '<div class="p-8 text-center text-xs text-slate-500"><span class="animate-spin text-base">⏳</span><br>Loading timetable and personal calendar events...</div>';
 
   try {
-    const facultySelect = document.getElementById('calendar-faculty-select');
-    let selectedUserId = currentUser ? currentUser.id : 'usr_sharma';
-    
-    if (facultySelect && facultySelect.value !== 'current') {
-      selectedUserId = facultySelect.value;
-    }
+    // Master Calendar shows strictly the logged-in faculty's personal timetable
+    const personalUserId = currentUser ? currentUser.id : 'usr_sharma';
 
-    const [staffRes, timetableRes, meetingsRes, calRes] = await Promise.all([
-      API.getStaff(),
-      API.getTimetable(selectedUserId),
+    const [timetableRes, meetingsRes, calRes] = await Promise.all([
+      API.getTimetable(personalUserId),
       API.getMeetings(),
       API.getCalendarEvents()
     ]);
-
-    // Populate faculty dropdown once
-    if (facultySelect && facultySelect.options.length <= 1 && staffRes && staffRes.users) {
-      staffRes.users.forEach(u => {
-        const opt = document.createElement('option');
-        opt.value = u.id;
-        opt.text = `${u.name} (${u.department || 'Faculty'})`;
-        if (currentUser && u.id === currentUser.id) {
-          opt.selected = true;
-        }
-        facultySelect.appendChild(opt);
-      });
-    }
 
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const timeSlots = [

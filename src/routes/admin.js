@@ -45,6 +45,29 @@ router.post('/assign-role', (req, res) => {
 });
 
 /**
+ * Update complete member data (Admin access)
+ */
+router.post('/update-member', (req, res) => {
+  const { userId, name, email, designation, department, employee_id, cabin, phone, bio, role } = req.body;
+  const db = readDB();
+  const user = db.users.find(u => u.id === userId);
+  if (!user) return res.status(404).json({ error: 'Staff member not found' });
+
+  if (name !== undefined && name.trim()) user.name = name.trim();
+  if (email !== undefined && email.trim()) user.email = email.trim();
+  if (designation !== undefined) user.designation = designation;
+  if (department !== undefined) user.department = department;
+  if (employee_id !== undefined) user.employee_id = employee_id;
+  if (cabin !== undefined) user.cabin = cabin;
+  if (phone !== undefined) user.phone = phone;
+  if (bio !== undefined) user.bio = bio;
+  if (role !== undefined && ['admin', 'organizer', 'faculty'].includes(role)) user.role = role;
+
+  writeDB(db);
+  res.json({ message: `Member ${user.name} data updated successfully`, user });
+});
+
+/**
  * Upload master institutional timetable
  */
 router.post('/upload-master-timetable', (req, res) => {

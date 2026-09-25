@@ -145,7 +145,7 @@
         </button>
         <button onclick="navigateTo('calendar')" id="nav-calendar" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-          <span>Calendar</span>
+          <span>Master Calendar</span>
         </button>
         <button onclick="navigateTo('my-meetings')" id="nav-my-meetings" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -342,7 +342,7 @@
               </h3>
               <p class="text-xs text-teal-100 mt-0.5">Live combined view of lecture hours, lab periods, and scheduled committee meetings</p>
             </div>
-            <button onclick="navigateTo('calendar')" class="text-xs font-bold text-white bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition self-start sm:self-auto cursor-pointer">Open Full Calendar &rarr;</button>
+            <button onclick="navigateTo('calendar')" class="text-xs font-bold text-white bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition self-start sm:self-auto cursor-pointer">Open Master Calendar &rarr;</button>
           </div>
 
           <!-- Visual Time Slots Bar with distinctive colors -->
@@ -733,37 +733,47 @@
 
           <div class="space-y-3 pt-1">
             <h3 class="font-bold text-slate-800 text-xs">Automation Preferences</h3>
-            <label class="flex items-center gap-2.5 text-slate-700 font-medium cursor-pointer"><input type="checkbox" checked class="rounded text-indigo-600 w-4 h-4"> 30-Minute Automated Push Reminders</label>
-            <label class="flex items-center gap-2.5 text-slate-700 font-medium cursor-pointer"><input type="checkbox" checked class="rounded text-indigo-600 w-4 h-4"> Auto-MoM Generation on Meeting Conclusion</label>
-            <label class="flex items-center gap-2.5 text-slate-700 font-medium cursor-pointer"><input type="checkbox" checked class="rounded text-indigo-600 w-4 h-4"> Weekly Master Timetable Collision Monitoring</label>
+            <label class="flex items-center gap-2.5 text-slate-700 font-medium cursor-pointer"><input type="checkbox" checked class="rounded text-[#135106] w-4 h-4"> 30-Minute Automated Push Reminders</label>
+            <label class="flex items-center gap-2.5 text-slate-700 font-medium cursor-pointer"><input type="checkbox" checked class="rounded text-[#135106] w-4 h-4"> Auto-MoM Generation on Meeting Conclusion</label>
+            <label class="flex items-center gap-2.5 text-slate-700 font-medium cursor-pointer"><input type="checkbox" checked class="rounded text-[#135106] w-4 h-4"> Weekly Master Timetable Collision Monitoring</label>
+          </div>
+        </div>
+
+        <!-- Admin-Only Institutional Member Directory & Data Access -->
+        <div id="settings-admin-members-panel" class="hidden bg-white rounded-2xl border border-slate-200 p-6 text-xs space-y-5 shadow-xs">
+          <div class="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-lg font-bold text-slate-900">Institutional Members Data Access & Management</h2>
+                <span class="text-[10px] bg-[#135106] text-white font-bold px-2 py-0.5 rounded uppercase">Admin Control</span>
+              </div>
+              <p class="text-slate-500 text-xs mt-0.5">Click any member to inspect full institutional records and modify their profile details.</p>
+            </div>
+            <span class="text-xs text-[#135106] bg-[#135106]/10 px-2.5 py-1 rounded-lg font-bold" id="settings-admin-member-count">All Members</span>
+          </div>
+
+          <!-- Members Grid Container -->
+          <div id="settings-admin-members-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <!-- Dynamically populated via app.js -->
           </div>
         </div>
       </section>
 
-      <!-- SCREEN 3: CALENDAR (INTEGRATED TIMETABLE & GOOGLE CALENDAR) -->
+      <!-- SCREEN 3: MASTER CALENDAR (PERSONAL TIMETABLE & GOOGLE CALENDAR) -->
       <section id="screen-calendar" class="hidden p-6 space-y-6">
         <!-- Calendar Header Controls -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
           <div>
             <div class="flex items-center gap-2">
-              <h2 class="text-lg font-bold text-slate-900">Institutional Master Calendar</h2>
-              <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full border border-emerald-300">Live Synced ✓</span>
+              <h2 class="text-lg font-bold text-slate-900">Master Calendar</h2>
             </div>
-            <p class="text-xs text-slate-500 mt-0.5">Unified schedule combining your weekly Timetable teaching periods and Google Calendar commitments.</p>
+            <p class="text-xs text-slate-500 mt-0.5">Unified personal schedule combining your weekly Timetable teaching periods and Google Calendar commitments.</p>
           </div>
 
           <div class="flex items-center flex-wrap gap-2.5">
-            <!-- Faculty Switcher -->
-            <div class="flex items-center gap-2">
-              <label class="text-xs font-semibold text-slate-500">Faculty View:</label>
-              <select id="calendar-faculty-select" onchange="renderCalendarScreen()" class="text-xs font-semibold p-2 rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <option value="current">My Schedule (Logged-in Faculty)</option>
-              </select>
-            </div>
-
             <!-- Sync Button -->
-            <button onclick="triggerCalendarSyncNow()" id="cal-sync-btn" class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition">
-              <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>
+            <button onclick="triggerCalendarSyncNow()" id="cal-sync-btn" class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#135106] bg-[#135106]/10 hover:bg-[#135106]/20 border border-[#135106]/30 rounded-xl transition cursor-pointer">
+              <svg class="w-4 h-4 text-[#135106]" fill="currentColor" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>
               <span>Sync with Google Calendar</span>
             </button>
           </div>
@@ -865,7 +875,7 @@
               </div>
               <p class="text-slate-600 mt-1">All semester teaching schedules and institutional meetings have been synchronized with your IGDTUW Google Workspace account.</p>
               <div class="mt-2.5 flex items-center gap-2">
-                <button onclick="navigateTo('calendar')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3 py-1.5 rounded-lg text-xs transition">View Calendar</button>
+                <button onclick="navigateTo('calendar')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3 py-1.5 rounded-lg text-xs transition">View Master Calendar</button>
               </div>
             </div>
           </div>
@@ -1025,6 +1035,116 @@
         </div>
         <div class="pt-3 border-t border-slate-100 flex justify-end">
           <button type="submit" class="bg-indigo-600 text-white font-bold py-2.5 px-5 rounded-xl">Save & Continue &rarr;</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Admin Member Data Access & Edit Popup -->
+  <div id="admin-member-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-xl w-full border border-slate-200 shadow-2xl p-6 space-y-5 text-xs">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-3">
+          <div id="admin-member-modal-avatar" class="w-10 h-10 rounded-xl bg-[#135106] text-white font-bold flex items-center justify-center text-sm shrink-0">
+            --
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900" id="admin-member-modal-title">Member Information</h3>
+            <p class="text-slate-500 text-[11px]" id="admin-member-modal-subtitle">Institutional Profile & Access Records</p>
+          </div>
+        </div>
+        <button onclick="closeAdminMemberModal()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition cursor-pointer" title="Close">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- Member Details Form (Fields disabled initially, editable when 'Change' is clicked) -->
+      <form id="admin-member-form" onsubmit="event.preventDefault()" class="space-y-4">
+        <input type="hidden" id="admin-member-id">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div class="sm:col-span-2">
+            <label class="block font-bold text-slate-700 mb-1">Full Name</label>
+            <input type="text" id="admin-member-name" disabled class="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-slate-100 text-slate-700 focus:bg-white focus:ring-2 focus:ring-[#135106] focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Institutional Email</label>
+            <input type="email" id="admin-member-email" disabled class="w-full p-2.5 rounded-xl border border-slate-300 font-mono-code bg-slate-100 text-slate-700 focus:bg-white focus:ring-2 focus:ring-[#135106] focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">System Role</label>
+            <select id="admin-member-role" disabled class="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-slate-100 text-slate-700 focus:bg-white focus:ring-2 focus:ring-[#135106] focus:outline-none">
+              <option value="faculty">Faculty</option>
+              <option value="organizer">Organizer / Head of Department</option>
+              <option value="admin">University Administrator</option>
+            </select>
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block font-bold text-slate-700 mb-1">Official Designation</label>
+            <select id="admin-member-designation" disabled class="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-slate-100 text-slate-700 focus:bg-white focus:ring-2 focus:ring-[#135106] focus:outline-none">
+              <option value="Hon’ble Vice Chancellor">Hon’ble Vice Chancellor</option>
+              <option value="Dean of Academic Affairs">Dean of Academic Affairs</option>
+              <option value="Dean of Student Welfare & Placements">Dean of Student Welfare & Placements</option>
+              <option value="Professor & Head of Department (CSE)">Professor & Head of Department (CSE)</option>
+              <option value="Associate Professor & Head of Department (IT)">Associate Professor & Head of Department (IT)</option>
+              <option value="Professor & Head of Department (ECE)">Professor & Head of Department (ECE)</option>
+              <option value="Associate Professor & Head of Department (MAE)">Associate Professor & Head of Department (MAE)</option>
+              <option value="Professor">Professor</option>
+              <option value="Associate Professor">Associate Professor</option>
+              <option value="Assistant Professor">Assistant Professor</option>
+              <option value="Director of IT & Systems">Director of IT & Systems</option>
+              <option value="University System Administrator">University System Administrator</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Academic Department</label>
+            <select id="admin-member-department" disabled class="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-slate-100 text-slate-700 focus:bg-white focus:ring-2 focus:ring-[#135106] focus:outline-none">
+              <option value="Computer Science & Engineering">Computer Science & Engineering (CSE)</option>
+              <option value="Information Technology">Information Technology (IT)</option>
+              <option value="Electronics & Communication Engineering">Electronics & Communication Engineering (ECE)</option>
+              <option value="Mechanical & Automation Engineering">Mechanical & Automation Engineering (MAE)</option>
+              <option value="Academic Administration">Academic Administration</option>
+              <option value="Executive Directorate">Executive Directorate</option>
+              <option value="Student Welfare">Student Welfare</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Employee ID</label>
+            <input type="text" id="admin-member-empid" disabled class="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-slate-100 text-slate-700 focus:bg-white focus:ring-2 focus:ring-[#135106] focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Cabin / Room Number</label>
+            <input type="text" id="admin-member-cabin" disabled class="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-slate-100 text-slate-700 focus:bg-white focus:ring-2 focus:ring-[#135106] focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Phone / Extension</label>
+            <input type="text" id="admin-member-phone" disabled class="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-slate-100 text-slate-700 focus:bg-white focus:ring-2 focus:ring-[#135106] focus:outline-none">
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block font-bold text-slate-700 mb-1">Research Specialization / Bio</label>
+            <input type="text" id="admin-member-bio" disabled class="w-full p-2.5 rounded-xl border border-slate-300 font-medium bg-slate-100 text-slate-700 focus:bg-white focus:ring-2 focus:ring-[#135106] focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Action Buttons at the Bottom Right: Change & OK -->
+        <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
+          <button type="button" id="admin-member-change-btn" onclick="toggleAdminMemberEditing()" class="px-4 py-2 rounded-xl text-xs font-bold border border-[#135106] text-[#135106] hover:bg-[#135106]/10 transition cursor-pointer flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+            <span id="admin-member-change-btn-text">Change</span>
+          </button>
+          <button type="button" id="admin-member-ok-btn" onclick="closeAdminMemberModal()" class="px-5 py-2 rounded-xl text-xs font-bold bg-[#135106] hover:bg-[#0e3d04] text-white shadow-xs transition cursor-pointer">
+            OK
+          </button>
         </div>
       </form>
     </div>
