@@ -1532,6 +1532,20 @@ function renderOfficialMoMTemplate(meeting, attendance) {
     }
   }
 
+  // Populate Organizer Signature Blocks (person who created the meeting)
+  const organizerUser = staffDirectoryCache.find(u => u.id === meeting.organizerId) || null;
+  const organizerName = meeting.organizerName || (organizerUser ? organizerUser.name : (currentUser ? currentUser.name : 'Meeting Organizer'));
+  const organizerDesignation = organizerUser ? (organizerUser.designation || 'Faculty') : (currentUser ? (currentUser.designation || 'Faculty') : 'Faculty');
+  const organizerDepartment = organizerUser ? (organizerUser.department || '') : (currentUser ? (currentUser.department || '') : '');
+  const sigDesigLine = organizerDesignation + (organizerDepartment ? ', ' + organizerDepartment : '') + ', IGDTUW';
+
+  document.querySelectorAll('.mom-organizer-name').forEach(el => {
+    el.innerText = `(${organizerName})`;
+  });
+  document.querySelectorAll('.mom-organizer-designation').forEach(el => {
+    el.innerText = sigDesigLine;
+  });
+
   // Synchronize meeting number across the entire paper
   syncMeetingNumber(mtgNum);
 }
@@ -1570,7 +1584,7 @@ async function saveAndApproveCurrentMoM() {
   }
 }
 
-// Download MoM as Word Document (.docx)
+// Download MoM as Word Document (.doc)
 function downloadMoMAsWord() {
   if (!currentMoMMeeting) {
     alert('Please open a meeting MoM first.');
@@ -1587,52 +1601,49 @@ function downloadMoMAsWord() {
   const timeStr = currentMoMMeeting.start_time ? `${currentMoMMeeting.start_time} (Blended Mode)` : '12:30 P.M. (Blended Mode)';
   const heldLine = `${formattedDate} at ${timeStr}, Venue: ${location}`;
 
+  // Resolve organizer (person who created the meeting)
+  const organizerUser = staffDirectoryCache.find(u => u.id === currentMoMMeeting.organizerId) || null;
+  const organizerName = currentMoMMeeting.organizerName || (organizerUser ? organizerUser.name : (currentUser ? currentUser.name : 'Meeting Organizer'));
+  const organizerDesig = organizerUser ? (organizerUser.designation || 'Faculty') : (currentUser ? (currentUser.designation || 'Faculty') : 'Faculty');
+  const organizerDept = organizerUser ? (organizerUser.department || '') : (currentUser ? (currentUser.department || '') : '');
+  const sigLine = organizerDesig + (organizerDept ? ', ' + organizerDept : '') + ', IGDTUW';
+
   // Read attendance records
-  const attendance = currentAttendanceRecords && currentAttendanceRecords.length > 0 
-    ? currentAttendanceRecords 
+  const attendance = currentAttendanceRecords && currentAttendanceRecords.length > 0
+    ? currentAttendanceRecords
     : (currentMoMMeeting.attendance || []);
 
   const presentMembers = attendance.filter(m => m.status === 'present');
   const absentMembers = attendance.filter(m => m.status === 'absent');
 
-  // Distribution List (All invited members)
-  const allMembersHtml = attendance.map((m, idx) => {
+  // Distribution List
+  const allMembersHtml = attendance.map((m) => {
     const isExt = m.isExternal;
-    const affil = isExt ? (m.affiliation || 'External University') : (m.department ? `${m.department}, IGDTUW` : 'IGDTUW');
-    return `<li style="margin-bottom:4pt;"><strong>${m.title ? m.title + ' ' : ''}${m.name}</strong>, ${m.designation || 'Member'}, ${affil}</li>`;
-  }).join('');
+    const affil = isExt ? (m.affiliation || 'External University') : (m.department ? m.department + ', IGDTUW' : 'IGDTUW');
+    return '<li style="margin-bottom:4pt;"><b>' + (m.title ? m.title + ' ' : '') + m.name + '</b>, ' + (m.designation || 'Member') + ', ' + affil + '</li>';
+  }).join('\n');
 
   // Attended Table Rows
   const attendedRows = presentMembers.map((m, idx) => {
     const isExt = m.isExternal;
-    const affil = isExt ? (m.affiliation || 'External University') : (m.department ? `${m.department}, IGDTUW` : 'IGDTUW');
-    return `
-      <tr>
-        <td style="width:8%; text-align:center; padding:6pt; font-size:10pt; border:1pt solid #444444;">${idx + 1}.</td>
-        <td style="width:67%; padding:6pt; font-size:10pt; border:1pt solid #444444;">
-          <strong>${m.title ? m.title + ' ' : ''}${m.name}</strong>, ${m.designation || 'Faculty Member'}, ${affil}
-        </td>
-        <td style="width:25%; text-align:right; font-weight:bold; padding:6pt; font-size:10pt; border:1pt solid #444444;">
-          : ${m.role || 'Member'}
-        </td>
-      </tr>
-    `;
-  }).join('');
+    const affil = isExt ? (m.affiliation || 'External University') : (m.department ? m.department + ', IGDTUW' : 'IGDTUW');
+    return '<tr><td style="width:8%;text-align:center;padding:5pt;border:1pt solid #333;">' + (idx + 1) + '.</td>' +
+      '<td style="width:67%;padding:5pt;border:1pt solid #333;"><b>' + (m.title ? m.title + ' ' : '') + m.name + '</b>, ' + (m.designation || 'Faculty Member') + ', ' + affil + '</td>' +
+      '<td style="width:25%;text-align:right;font-weight:bold;padding:5pt;border:1pt solid #333;">: ' + (m.role || 'Member') + '</td></tr>';
+  }).join('\n');
 
   // Absence text
   const absenceText = absentMembers.length > 0
-    ? absentMembers.map(m => `<strong>${m.title ? m.title + ' ' : ''}${m.name}</strong>, ${m.designation || 'Member'} (${m.affiliation || 'IGDTUW'})`).join(' and ') + ' could not attend due to prior commitments.'
+    ? absentMembers.map(m => '<b>' + (m.title ? m.title + ' ' : '') + m.name + '</b>, ' + (m.designation || 'Member') + ' (' + (m.affiliation || 'IGDTUW') + ')').join(' and ') + ' could not attend due to prior commitments.'
     : 'All invited members attended the meeting.';
 
   // Chairperson
   const chairMember = presentMembers.find(m => m.role === 'Chairperson') || {
-    title: 'Prof.',
-    name: "Ranjana Jha",
-    designation: "Hon'ble Vice-Chancellor of IGDTUW"
+    title: 'Prof.', name: 'Ranjana Jha', designation: "Hon'ble Vice-Chancellor of IGDTUW"
   };
-  const chairText = `${chairMember.title ? chairMember.title + ' ' : ''}${chairMember.name}, ${chairMember.designation || "Hon'ble Vice-Chancellor of IGDTUW"}`;
+  const chairText = (chairMember.title ? chairMember.title + ' ' : '') + chairMember.name + ', ' + (chairMember.designation || "Hon'ble Vice-Chancellor of IGDTUW");
 
-  // Read agenda items & user typed deliberations
+  // Agenda items & user typed deliberations
   const agendas = (currentMoMMeeting.agendaItems && currentMoMMeeting.agendaItems.length > 0)
     ? currentMoMMeeting.agendaItems
     : getAgendaItems();
@@ -1641,253 +1652,126 @@ function downloadMoMAsWord() {
   agendas.forEach((item, idx) => {
     const itemTitle = typeof item === 'object' ? item.title : String(item);
     const subList = (typeof item === 'object' && Array.isArray(item.subAgendas)) ? item.subAgendas : [];
-    
-    // Read user typed deliberations from the on-screen editable div
-    const editorEl = document.querySelector(`.mom-deliberation-box[data-agenda-index="${idx}"]`);
+
+    const editorEl = document.querySelector('.mom-deliberation-box[data-agenda-index="' + idx + '"]');
     let userDeliberation = '';
     if (editorEl) {
-      const cloned = editorEl.cloneNode(true);
-      if (cloned.textContent.includes('Click here to enter deliberations')) {
-        userDeliberation = '<p style="color:#666666; font-style:italic; margin:4pt 0;">[Deliberations and recommendations recorded by the Council]</p>';
+      const rawText = editorEl.textContent || '';
+      if (rawText.includes('Click here to enter deliberations')) {
+        userDeliberation = '<p style="color:#666;font-style:italic;">[Deliberations and recommendations recorded by the Council]</p>';
       } else {
-        userDeliberation = cloned.innerHTML;
+        userDeliberation = editorEl.innerHTML;
       }
     } else {
-      userDeliberation = '<p style="color:#666666; font-style:italic; margin:4pt 0;">[Deliberations and recommendations recorded by the Council]</p>';
+      userDeliberation = '<p style="color:#666;font-style:italic;">[Deliberations and recommendations recorded by the Council]</p>';
     }
 
     let subAgendasHtml = '';
     if (subList.length > 0) {
-      subAgendasHtml = `
-        <div style="margin-left:18pt; margin-top:4pt; margin-bottom:6pt; font-size:10pt;">
-          ${subList.map((sub, sIdx) => `
-            <div style="margin-bottom:3pt;"><strong>(${String.fromCharCode(97 + sIdx)})</strong> ${sub}</div>
-          `).join('')}
-        </div>
-      `;
+      subAgendasHtml = '<div style="margin-left:18pt;margin-top:4pt;margin-bottom:6pt;">';
+      subList.forEach((sub, sIdx) => {
+        subAgendasHtml += '<p style="margin:2pt 0;"><b>(' + String.fromCharCode(97 + sIdx) + ')</b> ' + sub + '</p>';
+      });
+      subAgendasHtml += '</div>';
     }
 
-    agendaItemsDocHtml += `
-      <div style="margin-top:14pt; padding-top:8pt; border-top:1pt solid #dddddd;">
-        <h3 style="font-size:11pt; font-weight:bold; margin:6pt 0 4pt 0;">
-          Item No. ${mtgNumDigits}.${String(idx + 1).padStart(2, '0')}: ${itemTitle}
-        </h3>
-        ${subAgendasHtml}
-        <div style="margin-left:14pt; margin-top:6pt; line-height:1.5; font-size:10.5pt;">
-          ${userDeliberation}
-        </div>
-      </div>
-    `;
+    agendaItemsDocHtml += '<div style="margin-top:14pt;padding-top:8pt;border-top:1pt solid #ddd;">' +
+      '<p style="font-size:11pt;font-weight:bold;margin:6pt 0 4pt 0;">Item No. ' + mtgNumDigits + '.' + String(idx + 1).padStart(2, '0') + ': ' + itemTitle + '</p>' +
+      subAgendasHtml +
+      '<div style="margin-left:14pt;margin-top:6pt;line-height:1.5;">' + userDeliberation + '</div>' +
+      '</div>';
   });
 
-  // Assemble full Word HTML Document with Office XML schema
-  const wordDocumentHtml = `
-    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-    <head>
-      <meta charset='utf-8'>
-      <title>Minutes of Meeting - ${meetingTitle}</title>
-      <!--[if gte mso 9]>
-      <xml>
-        <w:WordDocument>
-          <w:View>Print</w:View>
-          <w:Zoom>100</w:Zoom>
-          <w:DoNotOptimizeForBrowser/>
-        </w:WordDocument>
-      </xml>
-      <![endif]-->
-      <style>
-        @page Section1 {
-          size: 21.0cm 29.7cm; /* A4 */
-          margin: 2.54cm 2.54cm 2.54cm 2.54cm; /* 1 inch margins */
-          mso-header-margin: 1.25cm;
-          mso-footer-margin: 1.25cm;
-          mso-paper-source: 0;
-        }
-        div.Section1 { page: Section1; }
-        body {
-          font-family: 'Times New Roman', Times, serif;
-          font-size: 11pt;
-          line-height: 1.45;
-          color: #000000;
-        }
-        h1 {
-          font-family: 'Times New Roman', Times, serif;
-          font-size: 14pt;
-          font-weight: bold;
-          text-align: center;
-          margin: 0 0 2pt 0;
-          text-transform: uppercase;
-          color: #000000;
-        }
-        h2 {
-          font-family: 'Times New Roman', Times, serif;
-          font-size: 12pt;
-          font-weight: bold;
-          text-align: center;
-          margin: 2pt 0;
-          color: #000000;
-        }
-        h3 {
-          font-family: 'Times New Roman', Times, serif;
-          font-size: 11pt;
-          font-weight: bold;
-          margin: 8pt 0 4pt 0;
-          color: #000000;
-        }
-        p {
-          margin: 6pt 0;
-          text-align: justify;
-        }
-        table {
-          border-collapse: collapse;
-          width: 100%;
-          margin: 8pt 0;
-        }
-        th, td {
-          border: 1pt solid #444444;
-          padding: 5pt 7pt;
-          vertical-align: top;
-          font-size: 10pt;
-        }
-        ol {
-          margin: 4pt 0 8pt 24pt;
-          padding: 0;
-        }
-        li {
-          margin-bottom: 4pt;
-        }
-        .center { text-align: center; }
-        .right { text-align: right; }
-        .sig-block {
-          margin-top: 18pt;
-          text-align: right;
-          font-weight: bold;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="Section1">
-        
-        <!-- ============================================== -->
-        <!-- PART 1: COVERING NOTICE / LETTER               -->
-        <!-- ============================================== -->
-        <div class="center">
-          <h1>INDIRA GANDHI DELHI TECHNICAL UNIVERSITY FOR WOMEN</h1>
-          <p class="center" style="font-size:10pt; margin:1pt 0; font-weight:bold;">(Established by Govt. of Delhi vide Act 09 of 2012)</p>
-          <p class="center" style="font-size:10pt; margin:1pt 0;">Kashmere Gate, Delhi-110006</p>
-        </div>
+  // Signature block HTML (for organizer, with blank space for hand-signature)
+  const sigBlockHtml = '<div style="text-align:right;margin-top:20pt;font-weight:bold;">' +
+    '<div style="width:150pt;margin-left:auto;border-bottom:1pt solid #333;height:40pt;"></div>' +
+    '<p style="margin:4pt 0 0 0;">(' + organizerName + ')</p>' +
+    '<p style="margin:0;font-weight:normal;font-size:10pt;">' + sigLine + '</p>' +
+    '</div>';
 
-        <table style="width:100%; border:none; margin:10pt 0; border-top:1pt solid #000; border-bottom:1pt solid #000;">
-          <tr style="border:none;">
-            <td style="border:none; width:50%; font-weight:bold; font-size:10.5pt; padding:4pt 0;">
-              Plg./66/IGDTUW/${mtgNum} AC/2026/1535
-            </td>
-            <td style="border:none; width:50%; text-align:right; font-weight:bold; font-size:10.5pt; padding:4pt 0;">
-              Dated: ${formattedDate}
-            </td>
-          </tr>
-        </table>
+  // Build the Word HTML document
+  const wordHtml = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
+    '<head><meta charset="utf-8"><title>Minutes of Meeting - ' + meetingTitle + '</title>' +
+    '<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->' +
+    '<style>' +
+    '@page Section1 { size:21.0cm 29.7cm; margin:2.54cm 2.54cm 2.54cm 2.54cm; mso-header-margin:1.25cm; mso-footer-margin:1.25cm; }' +
+    'div.Section1 { page:Section1; }' +
+    'body { font-family:"Times New Roman",Times,serif; font-size:11pt; line-height:1.45; color:#000; }' +
+    'h1 { font-family:"Times New Roman",Times,serif; font-size:14pt; font-weight:bold; text-align:center; margin:0 0 2pt 0; text-transform:uppercase; }' +
+    'h2 { font-family:"Times New Roman",Times,serif; font-size:12pt; font-weight:bold; text-align:center; margin:2pt 0; }' +
+    'p { margin:6pt 0; text-align:justify; }' +
+    'table { border-collapse:collapse; width:100%; margin:8pt 0; }' +
+    'ol { margin:4pt 0 8pt 24pt; padding:0; }' +
+    'li { margin-bottom:4pt; }' +
+    '</style></head>' +
+    '<body><div class="Section1">' +
 
-        <p style="font-weight:bold; font-size:11.5pt; margin:10pt 0;">
-          Subject: - Minutes of the ${mtgNum} Meeting of the ${meetingTitle}
-        </p>
+    // PART 1: COVERING NOTICE
+    '<div style="text-align:center;">' +
+    '<h1>INDIRA GANDHI DELHI TECHNICAL UNIVERSITY FOR WOMEN</h1>' +
+    '<p style="text-align:center;font-size:10pt;margin:1pt 0;font-weight:bold;">(Established by Govt. of Delhi vide Act 09 of 2012)</p>' +
+    '<p style="text-align:center;font-size:10pt;margin:1pt 0;">Kashmere Gate, Delhi-110006</p>' +
+    '</div>' +
 
-        <p>
-          Please find enclosed herewith a copy of the Minutes of the ${mtgNum} Meeting of the ${meetingTitle} of Indira Gandhi Delhi Technical University for Women held on ${heldLine}.
-        </p>
+    '<table style="width:100%;border:none;margin:10pt 0;border-top:1pt solid #000;border-bottom:1pt solid #000;">' +
+    '<tr style="border:none;"><td style="border:none;width:50%;font-weight:bold;font-size:10.5pt;padding:4pt 0;">Plg./66/IGDTUW/' + mtgNum + ' AC/2026/1535</td>' +
+    '<td style="border:none;width:50%;text-align:right;font-weight:bold;font-size:10.5pt;padding:4pt 0;">Dated: ' + formattedDate + '</td></tr></table>' +
 
-        <div class="sig-block">
-          <p style="font-style:italic; font-family:'Segoe Script', 'Brush Script MT', cursive; margin:0; font-size:12pt;">Bkumar</p>
-          <p style="margin:2pt 0;">(Prof. Brijesh Kumar)</p>
-          <p style="margin:0; font-weight:normal; font-size:10pt;">Registrar, IGDTUW</p>
-        </div>
+    '<p style="font-weight:bold;font-size:11.5pt;margin:10pt 0;">Subject: - Minutes of the ' + mtgNum + ' Meeting of the ' + meetingTitle + '</p>' +
+    '<p>Please find enclosed herewith a copy of the Minutes of the ' + mtgNum + ' Meeting of the ' + meetingTitle + ' of Indira Gandhi Delhi Technical University for Women held on ' + heldLine + '.</p>' +
 
-        <table style="width:100%; border:none; margin:12pt 0 6pt 0; border-top:1pt solid #000;">
-          <tr style="border:none;">
-            <td style="border:none; width:50%; font-weight:bold; font-size:10.5pt; padding:4pt 0;">
-              Plg./66/IGDTUW/${mtgNum} AC/2026/1535
-            </td>
-            <td style="border:none; width:50%; text-align:right; font-weight:bold; font-size:10.5pt; padding:4pt 0;">
-              Dated: ${formattedDate}
-            </td>
-          </tr>
-        </table>
+    sigBlockHtml +
 
-        <p style="font-weight:bold; font-size:11pt; margin:6pt 0 4pt 0;">All Members: -</p>
-        <ol>
-          ${allMembersHtml}
-        </ol>
+    '<table style="width:100%;border:none;margin:12pt 0 6pt 0;border-top:1pt solid #000;">' +
+    '<tr style="border:none;"><td style="border:none;width:50%;font-weight:bold;font-size:10.5pt;padding:4pt 0;">Plg./66/IGDTUW/' + mtgNum + ' AC/2026/1535</td>' +
+    '<td style="border:none;width:50%;text-align:right;font-weight:bold;font-size:10.5pt;padding:4pt 0;">Dated: ' + formattedDate + '</td></tr></table>' +
 
-        <div class="sig-block">
-          <p style="font-style:italic; font-family:'Segoe Script', 'Brush Script MT', cursive; margin:0; font-size:12pt;">Bkumar</p>
-          <p style="margin:2pt 0;">(Prof. Brijesh Kumar)</p>
-          <p style="margin:0; font-weight:normal; font-size:10pt;">Registrar, IGDTUW</p>
-        </div>
+    '<p style="font-weight:bold;font-size:11pt;margin:6pt 0 4pt 0;">All Members: -</p>' +
+    '<ol>' + allMembersHtml + '</ol>' +
 
-        <!-- Word Native Page Break -->
-        <br clear="all" style="page-break-before:always; mso-break-type:section-break" />
+    sigBlockHtml +
 
-        <!-- ============================================== -->
-        <!-- PART 2: MAIN MINUTES DOCUMENT                  -->
-        <!-- ============================================== -->
-        <div class="center">
-          <h1>INDIRA GANDHI DELHI TECHNICAL UNIVERSITY FOR WOMEN</h1>
-          <p class="center" style="font-size:10pt; margin:1pt 0; font-weight:bold;">(Established by Govt. of Delhi vide Act 09 of 2012)</p>
-          <p class="center" style="font-size:10pt; margin:1pt 0;">Kashmere Gate, Delhi-110006</p>
-        </div>
+    // PAGE BREAK
+    '<br clear="all" style="page-break-before:always;mso-break-type:section-break" />' +
 
-        <div style="border-top:1pt solid #000; border-bottom:1pt solid #000; margin:10pt 0; padding:6pt 0; text-align:center;">
-          <h2 style="font-size:11.5pt;">
-            Minutes of the ${mtgNum} Meeting of the ${meetingTitle}, Indira Gandhi Delhi Technical University for Women (IGDTUW) Held on: ${heldLine}
-          </h2>
-        </div>
+    // PART 2: MAIN MINUTES
+    '<div style="text-align:center;">' +
+    '<h1>INDIRA GANDHI DELHI TECHNICAL UNIVERSITY FOR WOMEN</h1>' +
+    '<p style="text-align:center;font-size:10pt;margin:1pt 0;font-weight:bold;">(Established by Govt. of Delhi vide Act 09 of 2012)</p>' +
+    '<p style="text-align:center;font-size:10pt;margin:1pt 0;">Kashmere Gate, Delhi-110006</p>' +
+    '</div>' +
 
-        <p>
-          The ${mtgNum} Meeting of the ${meetingTitle} was held under the Chairpersonship of <strong>${chairText}</strong>.
-        </p>
+    '<div style="border-top:1pt solid #000;border-bottom:1pt solid #000;margin:10pt 0;padding:6pt 0;text-align:center;">' +
+    '<h2 style="font-size:11.5pt;">Minutes of the ' + mtgNum + ' Meeting of the ' + meetingTitle + ', Indira Gandhi Delhi Technical University for Women (IGDTUW) Held on: ' + heldLine + '</h2>' +
+    '</div>' +
 
-        <p style="font-weight:bold; margin-top:10pt;">The following members attended the meeting:</p>
+    '<p>The ' + mtgNum + ' Meeting of the ' + meetingTitle + ' was held under the Chairpersonship of <b>' + chairText + '</b>.</p>' +
+    '<p style="font-weight:bold;margin-top:10pt;">The following members attended the meeting:</p>' +
 
-        <table border="1" cellpadding="6" cellspacing="0" style="width:100%; border-collapse:collapse; margin:6pt 0;">
-          <tr style="background-color:#f0f0f0; font-weight:bold;">
-            <th style="width:8%; text-align:center;">S.No.</th>
-            <th style="width:67%; text-align:left;">Name & Designation</th>
-            <th style="width:25%; text-align:right;">Role</th>
-          </tr>
-          ${attendedRows}
-        </table>
+    '<table border="1" cellpadding="5" cellspacing="0" style="width:100%;border-collapse:collapse;margin:6pt 0;">' +
+    '<tr style="background-color:#f0f0f0;font-weight:bold;"><th style="width:8%;text-align:center;border:1pt solid #333;">S.No.</th><th style="width:67%;text-align:left;border:1pt solid #333;">Name &amp; Designation</th><th style="width:25%;text-align:right;border:1pt solid #333;">Role</th></tr>' +
+    attendedRows + '</table>' +
 
-        <div style="background-color:#f9f9f9; border:1pt solid #e0e0e0; padding:6pt 8pt; margin:10pt 0;">
-          <p style="margin:0;"><strong>Absence:</strong> <em>${absenceText}</em></p>
-        </div>
+    '<div style="background-color:#f9f9f9;border:1pt solid #e0e0e0;padding:6pt 8pt;margin:10pt 0;">' +
+    '<p style="margin:0;"><b>Absence:</b> <i>' + absenceText + '</i></p></div>' +
 
-        <p>
-          At the outset, Prof. Brijesh Kumar, Registrar, IGDTUW welcomed the Chairperson and all distinguished members of the ${meetingTitle}. With the permission of the Chair, the Agendas were placed before the ${meetingTitle} for deliberations. Agenda item-wise recommendations of the ${meetingTitle} are as under:
-        </p>
+    '<p>At the outset, <b>' + organizerName + '</b>, ' + sigLine + ' welcomed the Chairperson and all distinguished members of the ' + meetingTitle + '. With the permission of the Chair, the Agendas were placed before the ' + meetingTitle + ' for deliberations. Agenda item-wise recommendations of the ' + meetingTitle + ' are as under:</p>' +
 
-        ${agendaItemsDocHtml}
+    agendaItemsDocHtml +
 
-        <div style="margin-top:16pt; padding-top:8pt; border-top:1pt solid #000;">
-          <p style="font-weight:bold;">The meeting concluded with a vote of thanks to the Chair.</p>
-        </div>
+    '<div style="margin-top:16pt;padding-top:8pt;border-top:1pt solid #000;">' +
+    '<p style="font-weight:bold;">The meeting concluded with a vote of thanks to the Chair.</p></div>' +
 
-        <div class="sig-block" style="margin-top:20pt;">
-          <p style="font-style:italic; font-family:'Segoe Script', 'Brush Script MT', cursive; margin:0; font-size:12pt;">Bkumar</p>
-          <p style="margin:2pt 0;">(Prof. Brijesh Kumar)</p>
-          <p style="margin:0; font-weight:normal; font-size:10pt;">Registrar, IGDTUW</p>
-        </div>
+    sigBlockHtml +
 
-      </div>
-    </body>
-    </html>
-  `;
+    '</div></body></html>';
 
-  // Download Word (.docx)
+  // Download as .doc (application/msword) — Word opens this reliably
   const cleanTitle = meetingTitle.replace(/[^a-zA-Z0-9]/g, '_');
-  const filename = `IGDTUW_Minutes_${cleanTitle}_${mtgNum.replace(/[^a-zA-Z0-9]/g, '')}.docx`;
+  const filename = 'IGDTUW_Minutes_' + cleanTitle + '_' + mtgNum.replace(/[^a-zA-Z0-9]/g, '') + '.doc';
 
-  const blob = new Blob(['\ufeff' + wordDocumentHtml], {
-    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8'
+  const blob = new Blob(['\ufeff' + wordHtml], {
+    type: 'application/msword'
   });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1959,6 +1843,22 @@ async function openMeetingAttendanceModal(meetingId) {
     if (!meeting) return;
 
     currentAttendanceMeeting = meeting;
+
+    // --- Time-gate: only allow attendance once the meeting has started ---
+    const now = new Date();
+    if (meeting.date && meeting.start_time) {
+      const [mtgYear, mtgMonth, mtgDay] = meeting.date.split('-').map(Number);
+      const [mtgH, mtgM] = meeting.start_time.split(':').map(Number);
+      const meetingStart = new Date(mtgYear, mtgMonth - 1, mtgDay, mtgH, mtgM, 0);
+      if (now < meetingStart) {
+        // If attendance was already recorded, show it regardless
+        if (!(meeting.attendance && Array.isArray(meeting.attendance) && meeting.attendance.length > 0)) {
+          alert('Attendance recording will be available once the meeting starts.\n\nMeeting is scheduled for ' + meeting.date + ' at ' + meeting.start_time + '.');
+          return;
+        }
+      }
+    }
+    // --- End time-gate ---
 
     if (staffDirectoryCache.length === 0) {
       const res = await API.getStaff();
