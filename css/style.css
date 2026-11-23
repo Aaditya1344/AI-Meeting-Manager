@@ -1,16 +1,16 @@
-/* Custom Institutional Styles for IGDTUW Meeting Manager */
+/* Custom Institutional Styles for IGDTUW Meeting Manager (MeetFlow) */
 :root {
-  --igdtuw-navy: #043363;
-  --igdtuw-teal: #2a7f7b;
-  --igdtuw-green: #135106;
-  --igdtuw-red: #eb1d24;
-  --igdtuw-navy-light: #eef4fa;
-  --igdtuw-teal-light: #dcf6f4;
-  --igdtuw-green-light: #eaf6e0;
+  --mf-darkest: #051F20;
+  --mf-deep: #0B2B26;
+  --mf-forest: #163832;
+  --mf-sage-dark: #235347;
+  --mf-sage: #8EB69B;
+  --mf-mint-light: #DAF1DE;
 }
 
 body {
   font-family: 'Plus Jakarta Sans', 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f5faf6;
 }
 .hidden {
   display: none !important;
@@ -26,20 +26,20 @@ body {
   background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a7f7b;
+  background: #8EB69B;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #043363;
+  background: #163832;
 }
 
-.badge-available { background-color: #eaf6e0; color: #135106; border: 1px solid #cddac2; }
-.badge-busy { background-color: #fdf2f2; color: #eb1d24; border: 1px solid #fecaca; }
+.badge-available { background-color: #DAF1DE; color: #0B2B26; border: 1px solid #8EB69B; }
+.badge-busy { background-color: #fdf2f2; color: #b91c1c; border: 1px solid #fecaca; }
 .badge-partial { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
 .badge-off { background-color: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
 
 .modal-backdrop {
-  background-color: rgba(4, 51, 99, 0.65);
+  background-color: rgba(5, 31, 32, 0.7);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
@@ -50,23 +50,46 @@ body {
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .nav-item.nav-active {
-  background-color: #dcf6f4 !important;
-  color: #043363 !important;
+  background-color: #DAF1DE !important;
+  color: #051F20 !important;
   font-weight: 700 !important;
-  border-left: 5px solid #2a7f7b !important;
-  box-shadow: 0 1px 3px rgba(42, 127, 123, 0.15);
+  border-left: 5px solid #163832 !important;
+  box-shadow: 0 1px 3px rgba(11, 43, 38, 0.12);
 }
 .nav-item.nav-active svg {
-  color: #043363 !important;
+  color: #163832 !important;
 }
 .nav-item:not(.nav-active) {
-  color: #334155;
+  color: #163832;
   font-weight: 600;
   border-left: 4px solid transparent;
 }
 .nav-item:not(.nav-active):hover {
-  background-color: #eaf6e0;
-  color: #135106;
+  background-color: rgba(218, 241, 222, 0.6);
+  color: #051F20;
+}
+
+/* Print styling for official IGDTUW MoM */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #official-mom-paper, #official-mom-paper * {
+    visibility: visible;
+  }
+  #official-mom-paper {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20mm;
+    box-shadow: none;
+    border: none;
+  }
+  .no-print {
+    display: none !important;
+  }
 }
 
 /* Mobile responsive drawer animations & safe areas */

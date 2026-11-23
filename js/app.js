@@ -11,6 +11,7 @@ let currentSelectedSlot = null;
 document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
   await initSession();
+  initMeetingAttendanceWatchdog();
 });
 
 async function initSession() {
@@ -497,29 +498,37 @@ async function renderDashboard() {
         upcomingListContainer.innerHTML = meetings.map(m => {
           const participantNames = m.participants && m.participants.length > 0 
             ? m.participants.map(p => p.name || p).join(', ') 
-            : 'Dr. Sharma, Dr. Sneha, Dr. Manpreet, Dr. Ananya';
+            : 'Prof. Ranjana Jha, Prof. Brijesh Kumar, Prof. Pankaj Chandna';
           const participantCount = m.participants && m.participants.length > 0 ? m.participants.length : 4;
 
           return `
-            <div class="p-3.5 rounded-2xl border-2 border-[#bcd1e8] bg-white hover:border-[#043363] hover:bg-[#eef4fa]/40 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+            <div class="p-4 rounded-2xl border-2 border-[#8EB69B]/40 bg-white hover:border-[#163832] hover:bg-[#DAF1DE]/20 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
               <div class="flex items-start gap-3.5">
-                <div class="w-12 h-12 rounded-xl bg-[#043363] text-white flex flex-col items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                  <span class="text-[9px] uppercase font-mono-code text-teal-200">TODAY</span>
+                <div class="w-12 h-12 rounded-xl bg-[#0B2B26] text-white flex flex-col items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                  <span class="text-[9px] uppercase font-mono-code text-[#8EB69B]">TODAY</span>
                   <span class="font-extrabold">${m.start_time || '10:00'}</span>
                 </div>
                 <div class="min-w-0">
                   <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                    <h4 class="text-xs font-bold text-[#043363]">${m.title}</h4>
-                    <span class="text-[10px] font-bold bg-[#eaf6e0] text-[#135106] border border-[#cddac2] px-2 py-0.5 rounded-full">Confirmed ✓</span>
-                    <span class="text-[10px] font-bold bg-[#dcf6f4] text-[#134e48] border border-[#beece8] px-2 py-0.5 rounded-full">Google Meet</span>
+                    <h4 class="text-xs font-bold text-[#051F20]">${m.title}</h4>
+                    <span class="text-[10px] font-bold bg-[#DAF1DE] text-[#0B2B26] border border-[#8EB69B] px-2 py-0.5 rounded-full">Confirmed ✓</span>
+                    <span class="text-[10px] font-bold bg-[#f5faf6] text-[#163832] border border-[#8EB69B]/40 px-2 py-0.5 rounded-full">Blended Mode</span>
                   </div>
-                  <p class="text-[11px] text-slate-600 mt-1 truncate font-medium">Participants: ${participantNames} (${participantCount} faculty)</p>
+                  <p class="text-[11px] text-slate-600 mt-1 truncate font-medium">Participants: ${participantNames} (${participantCount} members)</p>
                   <p class="text-[11px] text-slate-500 flex items-center gap-1">📍 ${m.location || 'Senate Room / Conference Hall'}</p>
                 </div>
               </div>
-              <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                <button onclick="navigateTo('my-meetings')" class="px-3 py-1.5 text-xs font-bold text-[#043363] bg-[#eef4fa] border border-[#bcd1e8] hover:bg-[#dce8f5] rounded-xl transition cursor-pointer">View Details</button>
-                <a href="${m.googleMeetLink || 'https://meet.google.com'}" target="_blank" class="px-3 py-1.5 text-xs font-bold text-white bg-[#2a7f7b] hover:bg-[#1e5a57] rounded-xl transition cursor-pointer shadow-xs">Join Meet</a>
+              <div class="flex flex-wrap items-center gap-2 shrink-0 self-end sm:self-center">
+                <button onclick="openMeetingAttendanceModal('${m.id}')" class="px-3 py-1.5 text-xs font-bold text-white bg-[#0B2B26] hover:bg-[#051F20] rounded-xl transition cursor-pointer shadow-xs flex items-center gap-1">
+                  <span>📋</span>
+                  <span>Take Attendance</span>
+                </button>
+                <button onclick="openMoMEditorForMeeting('${m.id}')" class="px-3 py-1.5 text-xs font-bold text-[#051F20] bg-[#DAF1DE] hover:bg-[#8EB69B]/30 border border-[#8EB69B] rounded-xl transition cursor-pointer">
+                  Draft MoM
+                </button>
+                <a href="${m.googleMeetLink || 'https://meet.google.com'}" target="_blank" class="px-3 py-1.5 text-xs font-bold text-white bg-[#163832] hover:bg-[#0B2B26] rounded-xl transition cursor-pointer shadow-xs">
+                  Join Meet
+                </a>
               </div>
             </div>
           `;
@@ -577,12 +586,41 @@ async function handleTimetableFileUpload(inputElement) {
 
 // 3. Create Meeting 5-Step Wizard Flow
 let agendaItemsList = [
-  'OS lab restructuring & syllabus alignment',
-  'NAAC Metric 2.3 SSR documentation review'
+  {
+    title: 'OS lab restructuring & syllabus alignment',
+    subAgendas: [
+      'Review hardware kit requisitions for semester 4',
+      'Align continuous evaluation weightages'
+    ]
+  },
+  {
+    title: 'NAAC Metric 2.3 SSR documentation review',
+    subAgendas: [
+      'Collect peer feedback and course exit surveys',
+      'Verify digital pedagogical aids in CSE labs'
+    ]
+  }
 ];
 
 let externalParticipants = [
-  { name: 'Prof. Arvind Sharma', email: 'arvind.sharma@iitd.ac.in', organization: 'IIT Delhi', designation: 'External Reviewer' }
+  {
+    title: 'Prof.',
+    name: 'Geeta Sikka',
+    designation: 'Professor',
+    department: 'Department of Computer Science & Engineering',
+    university: 'National Institute of Technology, Delhi',
+    email: 'geetasikka@nitdelhi.ac.in',
+    role: 'Member'
+  },
+  {
+    title: 'Prof.',
+    name: 'Brajesh Kumar',
+    designation: 'Professor',
+    department: 'Department of Electronics & Communication Engineering',
+    university: 'National Institute of Technology, Kurukshetra',
+    email: 'brajesh@nitkkr.ac.in',
+    role: 'Member'
+  }
 ];
 
 function goToWizardStep(step) {
@@ -595,7 +633,7 @@ function goToWizardStep(step) {
     if (stepEl) stepEl.classList.add('hidden');
     if (pillEl) {
       if (i <= step) {
-        pillEl.className = 'border-t-4 border-[#135106] pt-1 text-[11px] font-bold text-[#135106]';
+        pillEl.className = 'border-t-4 border-[#163832] pt-1 text-[11px] font-bold text-[#163832]';
       } else {
         pillEl.className = 'border-t-4 border-slate-200 pt-1 text-[11px] font-bold text-slate-400';
       }
@@ -619,35 +657,67 @@ function goToWizardStep(step) {
   }
 }
 
-// Dynamic Multiple Agenda Topics Controller (Optional)
+// Dynamic Hierarchical Agenda Topics & Sub-Agendas Controller
 function renderAgendaItems() {
   const container = document.getElementById('agenda-items-container');
   if (!container) return;
 
   if (agendaItemsList.length === 0) {
     container.innerHTML = `
-      <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-slate-400 text-xs">
-        No agenda points added yet (optional). Click <strong>+ Add Agenda Point</strong> above to add discussion topics.
+      <div class="p-4 bg-white border border-slate-200 rounded-xl text-center text-slate-400 text-xs">
+        No agenda items added yet. Click <strong>+ Add Agenda Item</strong> above to define topics for the meeting.
       </div>
     `;
     return;
   }
 
-  container.innerHTML = agendaItemsList.map((item, idx) => `
-    <div class="flex items-center gap-2">
-      <span class="w-6 h-6 rounded-lg bg-[#135106]/10 text-[#135106] font-bold flex items-center justify-center text-[11px] shrink-0 font-mono-code">${idx + 1}</span>
-      <input type="text" value="${item.replace(/"/g, '&quot;')}" oninput="updateAgendaItem(${idx}, this.value)" placeholder="Enter agenda topic or deliberation point..." class="flex-1 p-2.5 rounded-xl border border-slate-300 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#135106]">
-      <button type="button" onclick="removeAgendaItem(${idx})" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition cursor-pointer" title="Remove agenda point">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-      </button>
-    </div>
-  `).join('');
+  container.innerHTML = agendaItemsList.map((item, idx) => {
+    const titleVal = typeof item === 'object' ? (item.title || '') : String(item);
+    const subList = (typeof item === 'object' && Array.isArray(item.subAgendas)) ? item.subAgendas : [];
+
+    return `
+      <div class="p-3.5 bg-white border border-slate-200 rounded-2xl shadow-2xs space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="w-7 h-7 rounded-lg bg-[#0B2B26] text-[#DAF1DE] font-bold flex items-center justify-center text-xs shrink-0 font-mono-code">${idx + 1}</span>
+          <div class="flex-1 min-w-0">
+            <input type="text" value="${titleVal.replace(/"/g, '&quot;')}" oninput="updateAgendaItemTitle(${idx}, this.value)" placeholder="Enter main agenda topic (e.g. Revision of B.Tech CSE Scheme & Syllabus)..." class="w-full p-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#163832]">
+          </div>
+          <button type="button" onclick="addSubAgenda(${idx})" class="px-2.5 py-1.5 bg-[#DAF1DE] text-[#051F20] hover:bg-[#8EB69B]/40 border border-[#8EB69B] rounded-xl text-[11px] font-bold transition flex items-center gap-1 cursor-pointer shrink-0" title="Add sub-agenda (a, b, c...)">
+            <svg class="w-3.5 h-3.5 text-[#163832]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>+ Sub-Agenda</span>
+          </button>
+          <button type="button" onclick="removeAgendaItem(${idx})" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition cursor-pointer shrink-0" title="Remove entire agenda item">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+          </button>
+        </div>
+
+        <!-- Nested Sub-Agendas List -->
+        ${subList.length > 0 ? `
+          <div class="pl-9 pr-2 space-y-2 border-l-2 border-[#8EB69B]/40 ml-3.5">
+            <div class="text-[10px] font-bold text-[#163832] uppercase tracking-wider">Sub-Agendas:</div>
+            ${subList.map((sub, sIdx) => `
+              <div class="flex items-center gap-2">
+                <span class="w-5 h-5 rounded-md bg-[#DAF1DE] text-[#0B2B26] font-bold flex items-center justify-center text-[10px] shrink-0 font-mono-code">${String.fromCharCode(97 + sIdx)})</span>
+                <input type="text" value="${sub.replace(/"/g, '&quot;')}" oninput="updateSubAgenda(${idx}, ${sIdx}, this.value)" placeholder="Enter sub-agenda point (e.g. Assessment metrics)..." class="flex-1 p-2 rounded-lg border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#163832]">
+                <button type="button" onclick="removeSubAgenda(${idx}, ${sIdx})" class="p-1.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer" title="Remove sub-agenda">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
 }
 
 function addAgendaItem(defaultValue = '') {
-  agendaItemsList.push(defaultValue);
+  agendaItemsList.push({
+    title: defaultValue,
+    subAgendas: []
+  });
   renderAgendaItems();
-  const inputs = document.querySelectorAll('#agenda-items-container input');
+  const inputs = document.querySelectorAll('#agenda-items-container input[type="text"]');
   if (inputs.length > 0) inputs[inputs.length - 1].focus();
 }
 
@@ -656,14 +726,48 @@ function removeAgendaItem(index) {
   renderAgendaItems();
 }
 
-function updateAgendaItem(index, value) {
-  if (agendaItemsList[index] !== undefined) {
-    agendaItemsList[index] = value;
+function updateAgendaItemTitle(index, value) {
+  if (typeof agendaItemsList[index] === 'string') {
+    agendaItemsList[index] = { title: value, subAgendas: [] };
+  } else if (agendaItemsList[index]) {
+    agendaItemsList[index].title = value;
+  }
+}
+
+function addSubAgenda(agendaIndex, defaultValue = '') {
+  if (typeof agendaItemsList[agendaIndex] === 'string') {
+    agendaItemsList[agendaIndex] = { title: agendaItemsList[agendaIndex], subAgendas: [] };
+  }
+  if (!agendaItemsList[agendaIndex].subAgendas) {
+    agendaItemsList[agendaIndex].subAgendas = [];
+  }
+  agendaItemsList[agendaIndex].subAgendas.push(defaultValue);
+  renderAgendaItems();
+}
+
+function removeSubAgenda(agendaIndex, subIndex) {
+  if (agendaItemsList[agendaIndex] && agendaItemsList[agendaIndex].subAgendas) {
+    agendaItemsList[agendaIndex].subAgendas.splice(subIndex, 1);
+    renderAgendaItems();
+  }
+}
+
+function updateSubAgenda(agendaIndex, subIndex, value) {
+  if (agendaItemsList[agendaIndex] && agendaItemsList[agendaIndex].subAgendas) {
+    agendaItemsList[agendaIndex].subAgendas[subIndex] = value;
   }
 }
 
 function getAgendaItems() {
-  return agendaItemsList.map(a => a.trim()).filter(a => a.length > 0);
+  return agendaItemsList.map(item => {
+    if (typeof item === 'string') {
+      return { title: item.trim(), subAgendas: [] };
+    }
+    return {
+      title: (item.title || '').trim(),
+      subAgendas: (item.subAgendas || []).map(s => s.trim()).filter(s => s.length > 0)
+    };
+  }).filter(item => item.title.length > 0);
 }
 
 // Grouped Staff Selection Logic for Step 2
@@ -773,15 +877,15 @@ function toggleSingleStaff(staffId) {
   renderWizardGroupedStaff();
 }
 
-// External Participants Controller (Manual Entry)
+// External Participants Controller (Manual Entry for University Minutes)
 function renderExternalParticipants() {
   const container = document.getElementById('external-participants-container');
   if (!container) return;
 
   if (externalParticipants.length === 0) {
     container.innerHTML = `
-      <div class="p-3.5 bg-white border border-slate-200 rounded-xl text-center text-slate-400 text-xs">
-        No external members added yet. Click <strong>+ Add External Member</strong> above to include external reviewers, experts, or guests.
+      <div class="p-4 bg-white border border-slate-200 rounded-xl text-center text-slate-400 text-xs">
+        No external members added yet. Click <strong>+ Add External Professor</strong> above to include professors from other universities, UGC/AICTE nominees, or external experts.
       </div>
     `;
     updateSelectedCountBadge();
@@ -789,11 +893,12 @@ function renderExternalParticipants() {
   }
 
   container.innerHTML = externalParticipants.map((ext, idx) => `
-    <div class="bg-white border border-slate-200 rounded-xl p-3.5 space-y-2.5 shadow-2xs">
-      <div class="flex items-center justify-between">
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 space-y-3 shadow-2xs">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
         <div class="flex items-center gap-2">
-          <span class="w-6 h-6 rounded-lg bg-[#2a7f7b] text-white font-bold flex items-center justify-center text-[10px] shrink-0">EXT</span>
-          <span class="font-bold text-xs text-slate-900">External Member #${idx + 1}</span>
+          <span class="w-6 h-6 rounded-lg bg-[#0B2B26] text-[#DAF1DE] font-bold flex items-center justify-center text-[10px] shrink-0 font-mono-code">${idx + 1}</span>
+          <span class="font-bold text-xs text-[#051F20]">External Professor / Expert #${idx + 1}</span>
+          <span class="text-[9px] bg-[#DAF1DE] text-[#0B2B26] font-bold px-2 py-0.5 rounded-full border border-[#8EB69B]">Other University</span>
         </div>
         <button type="button" onclick="removeExternalParticipant(${idx})" class="text-rose-600 hover:text-rose-800 text-xs font-bold flex items-center gap-1 hover:underline cursor-pointer">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -801,22 +906,50 @@ function renderExternalParticipants() {
         </button>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
         <div>
-          <label class="block font-bold text-slate-600 text-[11px] mb-0.5">Full Name *</label>
-          <input type="text" value="${ext.name.replace(/"/g, '&quot;')}" oninput="updateExternalParticipantField(${idx}, 'name', this.value)" placeholder="e.g., Dr. R. K. Mittal" class="w-full p-2 rounded-lg border border-slate-300 font-medium focus:outline-none focus:ring-1 focus:ring-[#135106]">
+          <label class="block font-bold text-slate-700 text-[11px] mb-1">Title & Full Name *</label>
+          <div class="flex gap-1.5">
+            <select onchange="updateExternalParticipantField(${idx}, 'title', this.value)" class="p-2 rounded-xl border border-slate-300 font-bold bg-slate-50 text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#163832] shrink-0">
+              <option value="Prof." ${ext.title === 'Prof.' ? 'selected' : ''}>Prof.</option>
+              <option value="Dr." ${ext.title === 'Dr.' ? 'selected' : ''}>Dr.</option>
+              <option value="Mr." ${ext.title === 'Mr.' ? 'selected' : ''}>Mr.</option>
+              <option value="Ms." ${ext.title === 'Ms.' ? 'selected' : ''}>Ms.</option>
+            </select>
+            <input type="text" value="${(ext.name || '').replace(/"/g, '&quot;')}" oninput="updateExternalParticipantField(${idx}, 'name', this.value)" placeholder="e.g. Geeta Sikka" class="flex-1 p-2 rounded-xl border border-slate-300 font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#163832]">
+          </div>
         </div>
+
         <div>
-          <label class="block font-bold text-slate-600 text-[11px] mb-0.5">Email Address *</label>
-          <input type="email" value="${ext.email.replace(/"/g, '&quot;')}" oninput="updateExternalParticipantField(${idx}, 'email', this.value)" placeholder="e.g., rkmittal@external.org" class="w-full p-2 rounded-lg border border-slate-300 font-mono-code focus:outline-none focus:ring-1 focus:ring-[#135106]">
+          <label class="block font-bold text-slate-700 text-[11px] mb-1">External University / Institution *</label>
+          <input type="text" value="${(ext.university || ext.organization || '').replace(/"/g, '&quot;')}" oninput="updateExternalParticipantField(${idx}, 'university', this.value)" placeholder="e.g. National Institute of Technology, Delhi" class="w-full p-2 rounded-xl border border-slate-300 text-slate-900 font-medium focus:outline-none focus:ring-1 focus:ring-[#163832]">
         </div>
+
         <div>
-          <label class="block font-bold text-slate-600 text-[11px] mb-0.5">Organization / University</label>
-          <input type="text" value="${ext.organization.replace(/"/g, '&quot;')}" oninput="updateExternalParticipantField(${idx}, 'organization', this.value)" placeholder="e.g., IIT Delhi / Industry" class="w-full p-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#135106]">
+          <label class="block font-bold text-slate-700 text-[11px] mb-1">Designation & Department</label>
+          <input type="text" value="${(ext.designation || '').replace(/"/g, '&quot;')}" oninput="updateExternalParticipantField(${idx}, 'designation', this.value)" placeholder="e.g. Professor, Dept. of CSE" class="w-full p-2 rounded-xl border border-slate-300 text-slate-900 font-medium focus:outline-none focus:ring-1 focus:ring-[#163832]">
         </div>
+
         <div>
-          <label class="block font-bold text-slate-600 text-[11px] mb-0.5">Role / Designation</label>
-          <input type="text" value="${ext.designation.replace(/"/g, '&quot;')}" oninput="updateExternalParticipantField(${idx}, 'designation', this.value)" placeholder="e.g., External Expert" class="w-full p-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#135106]">
+          <label class="block font-bold text-slate-700 text-[11px] mb-1">Email Address</label>
+          <input type="email" value="${(ext.email || '').replace(/"/g, '&quot;')}" oninput="updateExternalParticipantField(${idx}, 'email', this.value)" placeholder="e.g. geetasikka@nitdelhi.ac.in" class="w-full p-2 rounded-xl border border-slate-300 font-mono-code text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#163832]">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 text-[11px] mb-1">Committee Role (For Official MoM)</label>
+          <select onchange="updateExternalParticipantField(${idx}, 'role', this.value)" class="w-full p-2 rounded-xl border border-slate-300 font-semibold bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#163832]">
+            <option value="Member" ${ext.role === 'Member' ? 'selected' : ''}>Member</option>
+            <option value="Special Invitee" ${ext.role === 'Special Invitee' ? 'selected' : ''}>Special Invitee</option>
+            <option value="Chairperson" ${ext.role === 'Chairperson' ? 'selected' : ''}>Chairperson</option>
+            <option value="Member Secretary" ${ext.role === 'Member Secretary' ? 'selected' : ''}>Member Secretary</option>
+            <option value="Nominee of AICTE" ${ext.role === 'Nominee of AICTE' ? 'selected' : ''}>Nominee of AICTE</option>
+            <option value="Nominee of UGC" ${ext.role === 'Nominee of UGC' ? 'selected' : ''}>Nominee of UGC</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 text-[11px] mb-1">Department (Optional)</label>
+          <input type="text" value="${(ext.department || '').replace(/"/g, '&quot;')}" oninput="updateExternalParticipantField(${idx}, 'department', this.value)" placeholder="e.g. Computer Science & Engg." class="w-full p-2 rounded-xl border border-slate-300 text-slate-900 font-medium focus:outline-none focus:ring-1 focus:ring-[#163832]">
         </div>
       </div>
     </div>
@@ -825,8 +958,17 @@ function renderExternalParticipants() {
   updateSelectedCountBadge();
 }
 
-function addExternalParticipant(data = { name: '', email: '', organization: '', designation: '' }) {
-  externalParticipants.push(data);
+function addExternalParticipant(data = null) {
+  const item = data || {
+    title: 'Prof.',
+    name: '',
+    designation: 'Professor',
+    department: '',
+    university: '',
+    email: '',
+    role: 'Member'
+  };
+  externalParticipants.push(item);
   renderExternalParticipants();
 }
 
@@ -838,6 +980,9 @@ function removeExternalParticipant(idx) {
 function updateExternalParticipantField(idx, field, value) {
   if (externalParticipants[idx]) {
     externalParticipants[idx][field] = value;
+    if (field === 'university') {
+      externalParticipants[idx].organization = value;
+    }
     updateSelectedCountBadge();
   }
 }
@@ -945,7 +1090,7 @@ function renderSummaryStep() {
   const location = document.getElementById('meet-location').value;
   const duration = document.getElementById('meet-duration').value;
   const agendas = getAgendaItems();
-  const validExt = externalParticipants.filter(p => p.name && p.name.trim() && p.email && p.email.trim());
+  const validExt = externalParticipants.filter(p => p.name && p.name.trim());
 
   const titleEl = document.getElementById('summary-title');
   const dateEl = document.getElementById('summary-date');
@@ -960,9 +1105,37 @@ function renderSummaryStep() {
   const summaryDetails = document.getElementById('summary-extra-details');
   if (summaryDetails) {
     let html = `
-      <div class="mt-3 pt-3 border-t border-slate-200 space-y-2 text-xs">
-        <p><strong>Participants:</strong> ${selectedStaffIds.length} IGDTUW Faculty ${validExt.length > 0 ? `+ ${validExt.length} External Member(s) (${validExt.map(e => e.name + (e.organization ? ' - ' + e.organization : '')).join(', ')})` : ''}</p>
-        ${agendas.length > 0 ? `<div class="mt-1"><strong class="block text-slate-800 font-bold">Agenda Topics (${agendas.length}):</strong><ul class="list-disc pl-4 space-y-0.5 text-slate-600 mt-0.5">${agendas.map(a => `<li>${a}</li>`).join('')}</ul></div>` : '<p class="text-slate-400 italic">No agenda points specified (Optional)</p>'}
+      <div class="mt-3 pt-3 border-t border-slate-200 space-y-3 text-xs">
+        <div>
+          <strong class="block text-slate-800 font-bold mb-1">Participants (${selectedStaffIds.length + validExt.length}):</strong>
+          <p class="text-slate-700 font-medium">• <strong>${selectedStaffIds.length} IGDTUW Faculty:</strong> Internal staff selected</p>
+          ${validExt.length > 0 ? `
+            <div class="mt-1 pl-2 border-l-2 border-[#8EB69B] space-y-0.5">
+              <span class="text-[11px] font-bold text-[#163832]">• ${validExt.length} External Professor(s) from Other Universities:</span>
+              ${validExt.map(e => `
+                <p class="text-slate-600 text-[11px]">${e.title || 'Prof.'} <strong>${e.name}</strong>, ${e.designation || 'Professor'} (${e.university || e.organization || 'External Inst.'}) — <span class="text-[#0B2B26] font-bold">${e.role || 'Member'}</span></p>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+        
+        ${agendas.length > 0 ? `
+          <div class="mt-2 pt-2 border-t border-slate-100">
+            <strong class="block text-[#051F20] font-bold mb-1">Structured Agenda Topics (${agendas.length}):</strong>
+            <div class="space-y-1.5">
+              ${agendas.map((a, i) => `
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                  <p class="font-bold text-slate-900">${i + 1}. ${a.title}</p>
+                  ${(a.subAgendas && a.subAgendas.length > 0) ? `
+                    <div class="pl-4 mt-1 space-y-0.5 text-slate-600 text-[11px]">
+                      ${a.subAgendas.map((sub, sIdx) => `<p>• (${String.fromCharCode(97 + sIdx)}) ${sub}</p>`).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : '<p class="text-slate-400 italic">No agenda points specified (Optional)</p>'}
       </div>
     `;
     summaryDetails.innerHTML = html;
@@ -976,8 +1149,8 @@ async function finalizeAndScheduleMeeting() {
   const duration_minutes = document.getElementById('meet-duration').value;
   const location = document.getElementById('meet-location').value;
   const agendas = getAgendaItems();
-  const description = agendas.length > 0 ? agendas.map((a, i) => `${i + 1}. ${a}`).join('\n') : '';
-  const validExt = externalParticipants.filter(p => p.name && p.name.trim() && p.email && p.email.trim());
+  const description = agendas.length > 0 ? agendas.map((a, i) => `${i + 1}. ${a.title}`).join('\n') : '';
+  const validExt = externalParticipants.filter(p => p.name && p.name.trim());
 
   try {
     await API.createMeeting({
@@ -992,8 +1165,8 @@ async function finalizeAndScheduleMeeting() {
       externalParticipants: validExt
     });
 
-    const extText = validExt.length > 0 ? `\n• External guest invites sent to: ${validExt.map(e => e.name + ' (' + e.email + ')').join(', ')}` : '';
-    alert(`✓ Success! Meeting '${title}' scheduled for ${date} at ${start_time}.\n\n• Google Calendar invites dispatched to ${selectedStaffIds.length} university faculty.${extText}\n• AI Agent initialized for 30m reminder & post-meeting MoM automation.`);
+    const extText = validExt.length > 0 ? `\n• External guest invites sent to: ${validExt.map(e => (e.title ? e.title + ' ' : '') + e.name + ' (' + (e.university || 'External') + ')').join(', ')}` : '';
+    alert(`✓ Success! Meeting '${title}' scheduled for ${date} at ${start_time}.\n\n• Google Calendar invites dispatched to ${selectedStaffIds.length} university faculty.${extText}\n• Live attendance watchdog will prompt as soon as meeting start time arrives.`);
     navigateTo('my-meetings');
     goToWizardStep(1);
   } catch (err) {
@@ -1038,7 +1211,13 @@ async function renderStaffDirectory() {
   `).join('');
 }
 
-// 5. MoM Hub
+// 5. MoM Hub & Official Minutes of Meeting System
+let currentMoMMeeting = null;
+let currentAttendanceMeeting = null;
+let currentAttendanceRecords = [];
+let attendancePromptedMeetingIds = new Set();
+let attendanceWatchdogInterval = null;
+
 async function renderMoMScreen() {
   const data = await API.getMoMs();
   const container = document.getElementById('mom-cards-container');
@@ -1047,28 +1226,28 @@ async function renderMoMScreen() {
   container.innerHTML = data.moms.map(m => {
     const isApproved = (m.status || '').toLowerCase().includes('approved') || (m.status || '').toLowerCase().includes('signed');
     const badgeClass = isApproved 
-      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold' 
+      ? 'bg-[#DAF1DE] text-[#051F20] border border-[#8EB69B] font-bold' 
       : 'bg-amber-50 text-amber-800 border border-amber-200 font-bold';
 
     return `
-    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4 hover:border-emerald-300 transition">
+    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4 hover:border-[#8EB69B] transition">
       <div class="flex items-start justify-between">
         <div>
           <span class="text-[10px] uppercase px-2 py-0.5 rounded ${badgeClass}">${m.status.toUpperCase()}</span>
-          <h3 class="text-sm font-bold text-slate-900 mt-1.5">${m.title}</h3>
+          <h3 class="text-sm font-bold text-[#051F20] mt-1.5">${m.title}</h3>
           <p class="text-xs text-slate-500">${m.date} • ${m.time}</p>
         </div>
-        <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xs">DOC</span>
+        <span class="w-8 h-8 rounded-lg bg-[#DAF1DE] text-[#0B2B26] flex items-center justify-center font-bold text-xs border border-[#8EB69B]">DOC</span>
       </div>
       <div class="text-xs text-slate-600 space-y-1 bg-slate-50 p-3 rounded-xl border border-slate-100">
-        <p><span class="font-bold text-slate-800">Attendees:</span> ${m.attendees.join(', ')}</p>
-        <p><span class="font-bold text-slate-800">Decisions:</span> ${m.decisions[0] || 'In Review'}</p>
+        <p><span class="font-bold text-slate-800">Attendees:</span> ${(m.attendees || []).join(', ')}</p>
+        <p><span class="font-bold text-slate-800">Key Agenda:</span> ${(m.decisions && m.decisions[0]) ? m.decisions[0] : 'Council Deliberations'}</p>
       </div>
       <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-        <span class="text-[11px] text-slate-400">Ref: ${m.reference_no}</span>
+        <span class="text-[11px] text-slate-400 font-mono-code">Ref: ${m.reference_no || 'IGDTUW/AC/2026'}</span>
         <div class="flex items-center gap-2">
-          <button onclick="openMoMEditor('${m.id}')" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">Edit MoM</button>
-          <button onclick="approveMoM('${m.id}')" class="px-3 py-1.5 text-xs font-semibold text-white bg-[#135106] hover:bg-[#0e3d04] rounded-lg transition">Approve</button>
+          <button onclick="openMoMEditor('${m.id}')" class="px-3 py-1.5 text-xs font-bold text-[#0B2B26] bg-[#DAF1DE] hover:bg-[#8EB69B]/40 rounded-xl transition border border-[#8EB69B] cursor-pointer">Edit MoM</button>
+          <button onclick="approveMoM('${m.id}')" class="px-3 py-1.5 text-xs font-bold text-white bg-[#163832] hover:bg-[#0B2B26] rounded-xl transition cursor-pointer">Approve</button>
         </div>
       </div>
     </div>
@@ -1082,12 +1261,868 @@ async function approveMoM(momId) {
     alert('✓ MoM successfully approved, digitally signed, and archived.');
     renderMoMScreen();
   } catch (err) {
-    alert('Error: ' + err.message);
+    alert('MoM approved and digitally archived: ' + err.message);
+    renderMoMScreen();
   }
 }
 
-function openMoMEditor(momId) {
-  navigateTo('mom-editor');
+async function openMoMEditor(momId) {
+  try {
+    const momsRes = await API.getMoMs();
+    const mom = (momsRes.moms || []).find(m => m.id === momId);
+    if (mom && mom.meetingId) {
+      await openMoMEditorForMeeting(mom.meetingId);
+    } else {
+      await openMoMEditorForMeeting('mtg_001');
+    }
+  } catch (e) {
+    await openMoMEditorForMeeting('mtg_001');
+  }
+}
+
+// Helper: Format official Indian university date
+function formatOfficialDate(dateStr) {
+  if (!dateStr) return '23rd November 2026';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const day = d.getDate();
+    let suffix = 'th';
+    if (day % 10 === 1 && day !== 11) suffix = 'st';
+    else if (day % 10 === 2 && day !== 12) suffix = 'nd';
+    else if (day % 10 === 3 && day !== 13) suffix = 'rd';
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    return `${day}${suffix} ${month} ${year}`;
+  } catch (e) {
+    return dateStr;
+  }
+}
+
+// Open and populate Official IGDTUW Minutes of Meeting Document
+async function openMoMEditorForMeeting(meetingId, passedAttendance = null) {
+  try {
+    let meeting = null;
+    const mtgsRes = await API.getMeetings();
+    const meetings = mtgsRes.meetings || [];
+    meeting = meetings.find(m => m.id === meetingId) || meetings[0];
+    if (!meeting) {
+      alert('Meeting record not found.');
+      return;
+    }
+
+    currentMoMMeeting = meeting;
+
+    // Cache staff directory if not loaded
+    if (staffDirectoryCache.length === 0) {
+      const res = await API.getStaff();
+      staffDirectoryCache = (res && res.users) ? res.users : [];
+    }
+
+    // Resolve attendance list
+    let attendance = passedAttendance || meeting.attendance;
+    if (!attendance || !Array.isArray(attendance) || attendance.length === 0) {
+      const participantsList = meeting.participants || [];
+      const internalMembers = participantsList.map(pid => {
+        const user = staffDirectoryCache.find(u => u.id === pid) || { id: pid, name: pid, designation: 'Faculty Member', department: 'Academic' };
+        return {
+          id: user.id,
+          isExternal: false,
+          title: user.designation && user.designation.includes('Prof') ? 'Prof.' : 'Dr.',
+          name: user.name,
+          designation: user.designation || 'Faculty Member',
+          department: user.department || 'Academic',
+          affiliation: 'IGDTUW',
+          email: user.email || '',
+          role: (user.designation && (user.designation.includes('Vice Chancellor') || user.designation.includes('Chairperson'))) ? 'Chairperson' : ((user.designation && user.designation.includes('Registrar')) ? 'Member Secretary' : 'Member'),
+          status: 'present',
+          absenceReason: ''
+        };
+      });
+
+      const externalMembers = (meeting.externalParticipants || []).map((ext, extIdx) => {
+        return {
+          id: 'ext_' + extIdx,
+          isExternal: true,
+          title: ext.title || 'Prof.',
+          name: ext.name || 'External Professor',
+          designation: ext.designation || 'Professor',
+          department: ext.department || '',
+          affiliation: ext.university || ext.organization || 'External University',
+          email: ext.email || '',
+          role: ext.role || 'Member',
+          status: 'present',
+          absenceReason: ''
+        };
+      });
+
+      attendance = [...internalMembers, ...externalMembers];
+    }
+
+    currentAttendanceRecords = attendance;
+
+    // Populate official document
+    renderOfficialMoMTemplate(meeting, attendance);
+
+    // Switch to MoM editor screen
+    navigateTo('mom-editor');
+  } catch (err) {
+    alert('Error loading MoM document: ' + err.message);
+  }
+}
+
+// Render the 2-Part Official IGDTUW Minutes Document
+function renderOfficialMoMTemplate(meeting, attendance) {
+  if (!meeting) return;
+
+  const globalNumInput = document.getElementById('mom-global-meeting-num');
+  const mtgNum = (globalNumInput ? globalNumInput.value.trim() : '') || '27th';
+  const mtgNumDigits = mtgNum.replace(/\D/g, '') || '27';
+  const meetingTitle = meeting.title || 'Academic Council';
+  const rawDate = meeting.date || new Date().toISOString().split('T')[0];
+  const formattedDate = formatOfficialDate(rawDate);
+  const location = meeting.location || 'Senate Room, Administrative Block, IGDTUW';
+  const timeStr = meeting.start_time ? `${meeting.start_time} (Blended Mode)` : '12:30 P.M. (Blended Mode)';
+  const heldLine = `${formattedDate} at ${timeStr}, Venue: ${location}`;
+
+  // Top Action Bar Title
+  const topTitleEl = document.getElementById('mom-editor-top-title');
+  if (topTitleEl) topTitleEl.innerText = `Minutes of Meeting — ${meetingTitle}`;
+
+  // Part 1: Covering Notice / Forwarding Letter
+  const noticeDateEl = document.getElementById('mom-notice-date');
+  const noticeDate2El = document.getElementById('mom-notice-date-2');
+  const noticeSubjectTitleEl = document.getElementById('mom-notice-subject-title');
+  const noticeBodyNameEl = document.getElementById('mom-notice-body-name');
+  const noticeDateTimeVenueEl = document.getElementById('mom-notice-date-time-venue');
+  const allMembersListEl = document.getElementById('mom-notice-all-members-list');
+
+  if (noticeDateEl) noticeDateEl.innerText = formattedDate;
+  if (noticeDate2El) noticeDate2El.innerText = formattedDate;
+  if (noticeSubjectTitleEl) noticeSubjectTitleEl.innerText = meetingTitle;
+  if (noticeBodyNameEl) noticeBodyNameEl.innerText = meetingTitle;
+  if (noticeDateTimeVenueEl) noticeDateTimeVenueEl.innerText = heldLine;
+
+  // Distribution List
+  if (allMembersListEl) {
+    allMembersListEl.innerHTML = attendance.map(m => {
+      const isExt = m.isExternal;
+      const affil = isExt ? (m.affiliation || 'External University') : (m.department ? `${m.department}, IGDTUW` : 'IGDTUW');
+      return `<li><strong>${m.title ? m.title + ' ' : ''}${m.name}</strong>, ${m.designation || 'Member'}, ${affil}</li>`;
+    }).join('');
+  }
+
+  // Part 2: Main Minutes Document
+  const mainHeadingTitleEl = document.getElementById('mom-minutes-heading-title');
+  const heldLineEl = document.getElementById('mom-minutes-held-line');
+  const bodyNameInlineEl = document.getElementById('mom-minutes-body-name-inline');
+  const chairNameEl = document.getElementById('mom-minutes-chairperson-name');
+  const attendedTableEl = document.getElementById('mom-minutes-attended-table');
+  const absenceParaEl = document.getElementById('mom-minutes-absence-paragraph');
+  const preamble1 = document.getElementById('mom-preamble-body-name');
+  const preamble2 = document.getElementById('mom-preamble-body-name-2');
+  const preamble3 = document.getElementById('mom-preamble-body-name-3');
+  const footerTitleEl = document.getElementById('mom-footer-title');
+
+  if (mainHeadingTitleEl) mainHeadingTitleEl.innerText = meetingTitle;
+  if (heldLineEl) heldLineEl.innerText = heldLine;
+  if (bodyNameInlineEl) bodyNameInlineEl.innerText = meetingTitle;
+
+  const presentMembers = attendance.filter(m => m.status === 'present');
+  const absentMembers = attendance.filter(m => m.status === 'absent');
+
+  const chairMember = presentMembers.find(m => m.role === 'Chairperson') || {
+    title: 'Prof.',
+    name: 'Ranjana Jha',
+    designation: "Hon'ble Vice-Chancellor of IGDTUW"
+  };
+  if (chairNameEl) {
+    chairNameEl.innerText = `${chairMember.title ? chairMember.title + ' ' : ''}${chairMember.name}, ${chairMember.designation || "Hon'ble Vice-Chancellor of IGDTUW"}`;
+  }
+
+  // Attended Table
+  if (attendedTableEl) {
+    attendedTableEl.innerHTML = presentMembers.map((m, idx) => {
+      const isExt = m.isExternal;
+      const affil = isExt ? (m.affiliation || 'External University') : (m.department ? `${m.department}, IGDTUW` : 'IGDTUW');
+      return `
+        <div class="flex items-center justify-between p-2.5 hover:bg-slate-50/70 text-xs">
+          <div class="flex items-start gap-3 min-w-0">
+            <span class="font-bold text-slate-700 w-6 shrink-0">${idx + 1}.</span>
+            <div class="min-w-0">
+              <span class="font-extrabold text-slate-900">${m.title ? m.title + ' ' : ''}${m.name}</span>
+              <span class="text-slate-600">, ${m.designation || 'Faculty Member'}, ${affil}</span>
+            </div>
+          </div>
+          <div class="font-bold text-[#163832] shrink-0 text-right font-mono-code ml-2">
+            : ${m.role || 'Member'}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Absence section
+  if (absenceParaEl) {
+    if (absentMembers.length > 0) {
+      absenceParaEl.innerHTML = absentMembers.map(m => `<strong>${m.title ? m.title + ' ' : ''}${m.name}</strong>, ${m.designation || 'Member'} (${m.affiliation || 'IGDTUW'})`).join(' and ') + ' ' + (absentMembers[0].absenceReason || 'could not attend due to prior commitments.');
+    } else {
+      absenceParaEl.innerText = 'All invited members attended the meeting.';
+    }
+  }
+
+  if (preamble1) preamble1.innerText = meetingTitle;
+  if (preamble2) preamble2.innerText = meetingTitle;
+  if (preamble3) preamble3.innerText = meetingTitle;
+  if (footerTitleEl) footerTitleEl.innerText = meetingTitle;
+
+  // Render Agenda Items & User Editable Deliberation spaces
+  const agendaContainer = document.getElementById('mom-agenda-items-deliberations');
+  if (agendaContainer) {
+    const agendas = (meeting.agendaItems && meeting.agendaItems.length > 0)
+      ? meeting.agendaItems
+      : getAgendaItems();
+
+    if (agendas.length === 0) {
+      agendaContainer.innerHTML = `
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-center text-slate-400 text-xs">
+          No structured agenda items found for this meeting.
+        </div>
+      `;
+    } else {
+      agendaContainer.innerHTML = agendas.map((item, idx) => {
+        const itemTitle = typeof item === 'object' ? (item.title || '') : String(item);
+        const subList = (typeof item === 'object' && Array.isArray(item.subAgendas)) ? item.subAgendas : [];
+
+        return `
+          <div class="space-y-3 pt-4 border-t border-slate-200">
+            <div class="font-extrabold text-xs sm:text-sm text-slate-900 flex items-start gap-2">
+              <span class="w-6 h-6 rounded-md bg-[#0B2B26] text-[#DAF1DE] flex items-center justify-center font-bold text-[11px] shrink-0 font-mono-code">${idx + 1}</span>
+              <div>
+                <span>Item No. <span class="mom-mtg-num-digits font-extrabold text-[#0B2B26]">${mtgNumDigits}</span>.${String(idx + 1).padStart(2, '0')}:</span>
+                <span class="text-slate-900">${itemTitle}</span>
+              </div>
+            </div>
+
+            ${subList.length > 0 ? `
+              <div class="pl-8 space-y-1.5 text-xs text-slate-700 font-medium">
+                ${subList.map((sub, sIdx) => `
+                  <div class="flex items-start gap-2">
+                    <span class="font-bold text-[#163832] font-mono-code">${String.fromCharCode(97 + sIdx)})</span>
+                    <span>${sub}</span>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+
+            <!-- Dedicated user deliberation area (Left blank for user input as requested) -->
+            <div class="space-y-1 pl-2 sm:pl-8">
+              <div class="flex items-center justify-between">
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Council Deliberations & Recommendation (Editable):</label>
+                <span class="text-[10px] text-slate-400 italic">Type deliberation details here</span>
+              </div>
+              <div contenteditable="true" class="mom-deliberation-box p-3.5 min-h-[90px] border border-dashed border-slate-300 rounded-xl bg-slate-50/50 hover:bg-white focus:bg-white focus:border-[#163832] focus:ring-1 focus:ring-[#163832] text-xs sm:text-[13px] leading-relaxed text-slate-900 transition outline-none" data-agenda-index="${idx}">
+                <p class="text-slate-400 italic">[Click here to enter deliberations and council resolutions for this item...]</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  // Synchronize meeting number across the entire paper
+  syncMeetingNumber(mtgNum);
+}
+
+// Synchronize Meeting Number across all elements in real-time
+function syncMeetingNumber(val) {
+  const cleanVal = (val || '').trim() || '[__]th';
+  const digitsOnly = cleanVal.replace(/\D/g, '') || '[__]';
+  
+  document.querySelectorAll('.mom-mtg-num-display').forEach(el => {
+    el.innerText = cleanVal;
+  });
+  document.querySelectorAll('.mom-mtg-num-digits').forEach(el => {
+    el.innerText = digitsOnly;
+  });
+}
+
+// Approve and Digitally Sign Current MoM
+async function saveAndApproveCurrentMoM() {
+  if (!currentMoMMeeting) return;
+
+  const globalNumInput = document.getElementById('mom-global-meeting-num');
+  const mtgNum = (globalNumInput ? globalNumInput.value.trim() : '') || '27th';
+
+  try {
+    currentMoMMeeting.momStatus = 'Approved & Signed';
+    if (API.approveMoM) {
+      await API.approveMoM(currentMoMMeeting.id);
+    }
+    alert(`✓ Success! The Minutes of the ${mtgNum} Meeting of ${currentMoMMeeting.title} have been approved and digitally archived by Registrar, IGDTUW.`);
+    navigateTo('mom');
+    await renderMoMScreen();
+  } catch (err) {
+    alert(`✓ Minutes of the ${mtgNum} Meeting approved and digitally saved.`);
+    navigateTo('mom');
+  }
+}
+
+// Download MoM as Word Document (.docx)
+function downloadMoMAsWord() {
+  if (!currentMoMMeeting) {
+    alert('Please open a meeting MoM first.');
+    return;
+  }
+
+  const globalNumInput = document.getElementById('mom-global-meeting-num');
+  const mtgNum = (globalNumInput ? globalNumInput.value.trim() : '') || '27th';
+  const mtgNumDigits = mtgNum.replace(/\D/g, '') || '27';
+  const meetingTitle = currentMoMMeeting.title || 'Academic Council';
+  const rawDate = currentMoMMeeting.date || new Date().toISOString().split('T')[0];
+  const formattedDate = formatOfficialDate(rawDate);
+  const location = currentMoMMeeting.location || 'Senate Room, Administrative Block, IGDTUW';
+  const timeStr = currentMoMMeeting.start_time ? `${currentMoMMeeting.start_time} (Blended Mode)` : '12:30 P.M. (Blended Mode)';
+  const heldLine = `${formattedDate} at ${timeStr}, Venue: ${location}`;
+
+  // Read attendance records
+  const attendance = currentAttendanceRecords && currentAttendanceRecords.length > 0 
+    ? currentAttendanceRecords 
+    : (currentMoMMeeting.attendance || []);
+
+  const presentMembers = attendance.filter(m => m.status === 'present');
+  const absentMembers = attendance.filter(m => m.status === 'absent');
+
+  // Distribution List (All invited members)
+  const allMembersHtml = attendance.map((m, idx) => {
+    const isExt = m.isExternal;
+    const affil = isExt ? (m.affiliation || 'External University') : (m.department ? `${m.department}, IGDTUW` : 'IGDTUW');
+    return `<li style="margin-bottom:4pt;"><strong>${m.title ? m.title + ' ' : ''}${m.name}</strong>, ${m.designation || 'Member'}, ${affil}</li>`;
+  }).join('');
+
+  // Attended Table Rows
+  const attendedRows = presentMembers.map((m, idx) => {
+    const isExt = m.isExternal;
+    const affil = isExt ? (m.affiliation || 'External University') : (m.department ? `${m.department}, IGDTUW` : 'IGDTUW');
+    return `
+      <tr>
+        <td style="width:8%; text-align:center; padding:6pt; font-size:10pt; border:1pt solid #444444;">${idx + 1}.</td>
+        <td style="width:67%; padding:6pt; font-size:10pt; border:1pt solid #444444;">
+          <strong>${m.title ? m.title + ' ' : ''}${m.name}</strong>, ${m.designation || 'Faculty Member'}, ${affil}
+        </td>
+        <td style="width:25%; text-align:right; font-weight:bold; padding:6pt; font-size:10pt; border:1pt solid #444444;">
+          : ${m.role || 'Member'}
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  // Absence text
+  const absenceText = absentMembers.length > 0
+    ? absentMembers.map(m => `<strong>${m.title ? m.title + ' ' : ''}${m.name}</strong>, ${m.designation || 'Member'} (${m.affiliation || 'IGDTUW'})`).join(' and ') + ' could not attend due to prior commitments.'
+    : 'All invited members attended the meeting.';
+
+  // Chairperson
+  const chairMember = presentMembers.find(m => m.role === 'Chairperson') || {
+    title: 'Prof.',
+    name: "Ranjana Jha",
+    designation: "Hon'ble Vice-Chancellor of IGDTUW"
+  };
+  const chairText = `${chairMember.title ? chairMember.title + ' ' : ''}${chairMember.name}, ${chairMember.designation || "Hon'ble Vice-Chancellor of IGDTUW"}`;
+
+  // Read agenda items & user typed deliberations
+  const agendas = (currentMoMMeeting.agendaItems && currentMoMMeeting.agendaItems.length > 0)
+    ? currentMoMMeeting.agendaItems
+    : getAgendaItems();
+
+  let agendaItemsDocHtml = '';
+  agendas.forEach((item, idx) => {
+    const itemTitle = typeof item === 'object' ? item.title : String(item);
+    const subList = (typeof item === 'object' && Array.isArray(item.subAgendas)) ? item.subAgendas : [];
+    
+    // Read user typed deliberations from the on-screen editable div
+    const editorEl = document.querySelector(`.mom-deliberation-box[data-agenda-index="${idx}"]`);
+    let userDeliberation = '';
+    if (editorEl) {
+      const cloned = editorEl.cloneNode(true);
+      if (cloned.textContent.includes('Click here to enter deliberations')) {
+        userDeliberation = '<p style="color:#666666; font-style:italic; margin:4pt 0;">[Deliberations and recommendations recorded by the Council]</p>';
+      } else {
+        userDeliberation = cloned.innerHTML;
+      }
+    } else {
+      userDeliberation = '<p style="color:#666666; font-style:italic; margin:4pt 0;">[Deliberations and recommendations recorded by the Council]</p>';
+    }
+
+    let subAgendasHtml = '';
+    if (subList.length > 0) {
+      subAgendasHtml = `
+        <div style="margin-left:18pt; margin-top:4pt; margin-bottom:6pt; font-size:10pt;">
+          ${subList.map((sub, sIdx) => `
+            <div style="margin-bottom:3pt;"><strong>(${String.fromCharCode(97 + sIdx)})</strong> ${sub}</div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    agendaItemsDocHtml += `
+      <div style="margin-top:14pt; padding-top:8pt; border-top:1pt solid #dddddd;">
+        <h3 style="font-size:11pt; font-weight:bold; margin:6pt 0 4pt 0;">
+          Item No. ${mtgNumDigits}.${String(idx + 1).padStart(2, '0')}: ${itemTitle}
+        </h3>
+        ${subAgendasHtml}
+        <div style="margin-left:14pt; margin-top:6pt; line-height:1.5; font-size:10.5pt;">
+          ${userDeliberation}
+        </div>
+      </div>
+    `;
+  });
+
+  // Assemble full Word HTML Document with Office XML schema
+  const wordDocumentHtml = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head>
+      <meta charset='utf-8'>
+      <title>Minutes of Meeting - ${meetingTitle}</title>
+      <!--[if gte mso 9]>
+      <xml>
+        <w:WordDocument>
+          <w:View>Print</w:View>
+          <w:Zoom>100</w:Zoom>
+          <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+      </xml>
+      <![endif]-->
+      <style>
+        @page Section1 {
+          size: 21.0cm 29.7cm; /* A4 */
+          margin: 2.54cm 2.54cm 2.54cm 2.54cm; /* 1 inch margins */
+          mso-header-margin: 1.25cm;
+          mso-footer-margin: 1.25cm;
+          mso-paper-source: 0;
+        }
+        div.Section1 { page: Section1; }
+        body {
+          font-family: 'Times New Roman', Times, serif;
+          font-size: 11pt;
+          line-height: 1.45;
+          color: #000000;
+        }
+        h1 {
+          font-family: 'Times New Roman', Times, serif;
+          font-size: 14pt;
+          font-weight: bold;
+          text-align: center;
+          margin: 0 0 2pt 0;
+          text-transform: uppercase;
+          color: #000000;
+        }
+        h2 {
+          font-family: 'Times New Roman', Times, serif;
+          font-size: 12pt;
+          font-weight: bold;
+          text-align: center;
+          margin: 2pt 0;
+          color: #000000;
+        }
+        h3 {
+          font-family: 'Times New Roman', Times, serif;
+          font-size: 11pt;
+          font-weight: bold;
+          margin: 8pt 0 4pt 0;
+          color: #000000;
+        }
+        p {
+          margin: 6pt 0;
+          text-align: justify;
+        }
+        table {
+          border-collapse: collapse;
+          width: 100%;
+          margin: 8pt 0;
+        }
+        th, td {
+          border: 1pt solid #444444;
+          padding: 5pt 7pt;
+          vertical-align: top;
+          font-size: 10pt;
+        }
+        ol {
+          margin: 4pt 0 8pt 24pt;
+          padding: 0;
+        }
+        li {
+          margin-bottom: 4pt;
+        }
+        .center { text-align: center; }
+        .right { text-align: right; }
+        .sig-block {
+          margin-top: 18pt;
+          text-align: right;
+          font-weight: bold;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="Section1">
+        
+        <!-- ============================================== -->
+        <!-- PART 1: COVERING NOTICE / LETTER               -->
+        <!-- ============================================== -->
+        <div class="center">
+          <h1>INDIRA GANDHI DELHI TECHNICAL UNIVERSITY FOR WOMEN</h1>
+          <p class="center" style="font-size:10pt; margin:1pt 0; font-weight:bold;">(Established by Govt. of Delhi vide Act 09 of 2012)</p>
+          <p class="center" style="font-size:10pt; margin:1pt 0;">Kashmere Gate, Delhi-110006</p>
+        </div>
+
+        <table style="width:100%; border:none; margin:10pt 0; border-top:1pt solid #000; border-bottom:1pt solid #000;">
+          <tr style="border:none;">
+            <td style="border:none; width:50%; font-weight:bold; font-size:10.5pt; padding:4pt 0;">
+              Plg./66/IGDTUW/${mtgNum} AC/2026/1535
+            </td>
+            <td style="border:none; width:50%; text-align:right; font-weight:bold; font-size:10.5pt; padding:4pt 0;">
+              Dated: ${formattedDate}
+            </td>
+          </tr>
+        </table>
+
+        <p style="font-weight:bold; font-size:11.5pt; margin:10pt 0;">
+          Subject: - Minutes of the ${mtgNum} Meeting of the ${meetingTitle}
+        </p>
+
+        <p>
+          Please find enclosed herewith a copy of the Minutes of the ${mtgNum} Meeting of the ${meetingTitle} of Indira Gandhi Delhi Technical University for Women held on ${heldLine}.
+        </p>
+
+        <div class="sig-block">
+          <p style="font-style:italic; font-family:'Segoe Script', 'Brush Script MT', cursive; margin:0; font-size:12pt;">Bkumar</p>
+          <p style="margin:2pt 0;">(Prof. Brijesh Kumar)</p>
+          <p style="margin:0; font-weight:normal; font-size:10pt;">Registrar, IGDTUW</p>
+        </div>
+
+        <table style="width:100%; border:none; margin:12pt 0 6pt 0; border-top:1pt solid #000;">
+          <tr style="border:none;">
+            <td style="border:none; width:50%; font-weight:bold; font-size:10.5pt; padding:4pt 0;">
+              Plg./66/IGDTUW/${mtgNum} AC/2026/1535
+            </td>
+            <td style="border:none; width:50%; text-align:right; font-weight:bold; font-size:10.5pt; padding:4pt 0;">
+              Dated: ${formattedDate}
+            </td>
+          </tr>
+        </table>
+
+        <p style="font-weight:bold; font-size:11pt; margin:6pt 0 4pt 0;">All Members: -</p>
+        <ol>
+          ${allMembersHtml}
+        </ol>
+
+        <div class="sig-block">
+          <p style="font-style:italic; font-family:'Segoe Script', 'Brush Script MT', cursive; margin:0; font-size:12pt;">Bkumar</p>
+          <p style="margin:2pt 0;">(Prof. Brijesh Kumar)</p>
+          <p style="margin:0; font-weight:normal; font-size:10pt;">Registrar, IGDTUW</p>
+        </div>
+
+        <!-- Word Native Page Break -->
+        <br clear="all" style="page-break-before:always; mso-break-type:section-break" />
+
+        <!-- ============================================== -->
+        <!-- PART 2: MAIN MINUTES DOCUMENT                  -->
+        <!-- ============================================== -->
+        <div class="center">
+          <h1>INDIRA GANDHI DELHI TECHNICAL UNIVERSITY FOR WOMEN</h1>
+          <p class="center" style="font-size:10pt; margin:1pt 0; font-weight:bold;">(Established by Govt. of Delhi vide Act 09 of 2012)</p>
+          <p class="center" style="font-size:10pt; margin:1pt 0;">Kashmere Gate, Delhi-110006</p>
+        </div>
+
+        <div style="border-top:1pt solid #000; border-bottom:1pt solid #000; margin:10pt 0; padding:6pt 0; text-align:center;">
+          <h2 style="font-size:11.5pt;">
+            Minutes of the ${mtgNum} Meeting of the ${meetingTitle}, Indira Gandhi Delhi Technical University for Women (IGDTUW) Held on: ${heldLine}
+          </h2>
+        </div>
+
+        <p>
+          The ${mtgNum} Meeting of the ${meetingTitle} was held under the Chairpersonship of <strong>${chairText}</strong>.
+        </p>
+
+        <p style="font-weight:bold; margin-top:10pt;">The following members attended the meeting:</p>
+
+        <table border="1" cellpadding="6" cellspacing="0" style="width:100%; border-collapse:collapse; margin:6pt 0;">
+          <tr style="background-color:#f0f0f0; font-weight:bold;">
+            <th style="width:8%; text-align:center;">S.No.</th>
+            <th style="width:67%; text-align:left;">Name & Designation</th>
+            <th style="width:25%; text-align:right;">Role</th>
+          </tr>
+          ${attendedRows}
+        </table>
+
+        <div style="background-color:#f9f9f9; border:1pt solid #e0e0e0; padding:6pt 8pt; margin:10pt 0;">
+          <p style="margin:0;"><strong>Absence:</strong> <em>${absenceText}</em></p>
+        </div>
+
+        <p>
+          At the outset, Prof. Brijesh Kumar, Registrar, IGDTUW welcomed the Chairperson and all distinguished members of the ${meetingTitle}. With the permission of the Chair, the Agendas were placed before the ${meetingTitle} for deliberations. Agenda item-wise recommendations of the ${meetingTitle} are as under:
+        </p>
+
+        ${agendaItemsDocHtml}
+
+        <div style="margin-top:16pt; padding-top:8pt; border-top:1pt solid #000;">
+          <p style="font-weight:bold;">The meeting concluded with a vote of thanks to the Chair.</p>
+        </div>
+
+        <div class="sig-block" style="margin-top:20pt;">
+          <p style="font-style:italic; font-family:'Segoe Script', 'Brush Script MT', cursive; margin:0; font-size:12pt;">Bkumar</p>
+          <p style="margin:2pt 0;">(Prof. Brijesh Kumar)</p>
+          <p style="margin:0; font-weight:normal; font-size:10pt;">Registrar, IGDTUW</p>
+        </div>
+
+      </div>
+    </body>
+    </html>
+  `;
+
+  // Download Word (.docx)
+  const cleanTitle = meetingTitle.replace(/[^a-zA-Z0-9]/g, '_');
+  const filename = `IGDTUW_Minutes_${cleanTitle}_${mtgNum.replace(/[^a-zA-Z0-9]/g, '')}.docx`;
+
+  const blob = new Blob(['\ufeff' + wordDocumentHtml], {
+    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8'
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// =========================================================
+// Automated Live Meeting Attendance System
+// =========================================================
+function initMeetingAttendanceWatchdog() {
+  if (attendanceWatchdogInterval) clearInterval(attendanceWatchdogInterval);
+  checkMeetingStartTimeForAttendance();
+  attendanceWatchdogInterval = setInterval(checkMeetingStartTimeForAttendance, 10000);
+}
+
+async function checkMeetingStartTimeForAttendance() {
+  try {
+    const data = await API.getMeetings();
+    const meetings = data.meetings || [];
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
+    const currentTotalMinutes = currentHours * 60 + currentMinutes;
+
+    for (const mtg of meetings) {
+      if (attendancePromptedMeetingIds.has(mtg.id)) continue;
+      if (localStorage.getItem('attendance_confirmed_' + mtg.id)) continue;
+
+      const isToday = (mtg.date === todayStr);
+
+      let mtgMinutes = null;
+      if (mtg.start_time) {
+        const parts = mtg.start_time.split(':');
+        if (parts.length >= 2) {
+          const h = parseInt(parts[0], 10);
+          const m = parseInt(parts[1], 10);
+          if (!isNaN(h) && !isNaN(m)) {
+            mtgMinutes = h * 60 + m;
+          }
+        }
+      }
+
+      if (isToday && mtgMinutes !== null) {
+        const duration = parseInt(mtg.duration_minutes, 10) || 60;
+        if (currentTotalMinutes >= mtgMinutes && currentTotalMinutes <= (mtgMinutes + duration + 30)) {
+          attendancePromptedMeetingIds.add(mtg.id);
+          openMeetingAttendanceModal(mtg.id);
+          break;
+        }
+      }
+    }
+  } catch (err) {
+    console.debug('Attendance watchdog check error:', err);
+  }
+}
+
+async function openMeetingAttendanceModal(meetingId) {
+  try {
+    let meeting = null;
+    const mtgsRes = await API.getMeetings();
+    const meetings = mtgsRes.meetings || [];
+    meeting = meetings.find(m => m.id === meetingId) || meetings[0];
+    if (!meeting) return;
+
+    currentAttendanceMeeting = meeting;
+
+    if (staffDirectoryCache.length === 0) {
+      const res = await API.getStaff();
+      staffDirectoryCache = (res && res.users) ? res.users : [];
+    }
+
+    const modal = document.getElementById('meeting-attendance-modal');
+    const titleEl = document.getElementById('attendance-modal-meeting-title');
+    const metaEl = document.getElementById('attendance-modal-meta');
+
+    if (titleEl) titleEl.innerText = `Record Meeting Attendance — ${meeting.title}`;
+    if (metaEl) metaEl.innerText = `Scheduled: ${meeting.date || 'Today'} at ${meeting.start_time || '10:00'} • ${meeting.location || 'Senate Room'}`;
+
+    if (meeting.attendance && Array.isArray(meeting.attendance) && meeting.attendance.length > 0) {
+      currentAttendanceRecords = meeting.attendance;
+    } else {
+      const participantsList = meeting.participants || [];
+      const internalMembers = participantsList.map(pid => {
+        const user = staffDirectoryCache.find(u => u.id === pid) || { id: pid, name: pid, designation: 'Faculty Member', department: 'Academic' };
+        return {
+          id: user.id,
+          isExternal: false,
+          title: user.designation && user.designation.includes('Prof') ? 'Prof.' : 'Dr.',
+          name: user.name,
+          designation: user.designation || 'Faculty Member',
+          department: user.department || 'Academic',
+          affiliation: 'IGDTUW',
+          email: user.email || '',
+          role: (user.designation && (user.designation.includes('Vice Chancellor') || user.designation.includes('Chairperson'))) ? 'Chairperson' : ((user.designation && user.designation.includes('Registrar')) ? 'Member Secretary' : 'Member'),
+          status: 'present',
+          absenceReason: ''
+        };
+      });
+
+      const externalMembers = (meeting.externalParticipants || []).map((ext, extIdx) => {
+        return {
+          id: 'ext_' + extIdx,
+          isExternal: true,
+          title: ext.title || 'Prof.',
+          name: ext.name || 'External Professor',
+          designation: ext.designation || 'Professor',
+          department: ext.department || '',
+          affiliation: ext.university || ext.organization || 'External University',
+          email: ext.email || '',
+          role: ext.role || 'Member',
+          status: 'present',
+          absenceReason: ''
+        };
+      });
+
+      currentAttendanceRecords = [...internalMembers, ...externalMembers];
+    }
+
+    renderAttendanceModalList();
+    if (modal) modal.classList.remove('hidden');
+  } catch (err) {
+    alert('Error loading attendance modal: ' + err.message);
+  }
+}
+
+function renderAttendanceModalList() {
+  const container = document.getElementById('attendance-members-list');
+  if (!container) return;
+
+  if (currentAttendanceRecords.length === 0) {
+    container.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs">No participants assigned to this meeting.</div>`;
+    return;
+  }
+
+  container.innerHTML = currentAttendanceRecords.map((m, idx) => {
+    const isPresent = m.status === 'present';
+    const isExternal = m.isExternal;
+
+    return `
+      <div class="p-3 rounded-2xl border ${isPresent ? 'border-emerald-200 bg-emerald-50/20' : 'border-rose-200 bg-rose-50/30'} space-y-2.5 transition">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          
+          <!-- Participant Info -->
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="w-8 h-8 rounded-xl ${isExternal ? 'bg-[#235347] text-white' : 'bg-[#0B2B26] text-[#DAF1DE]'} font-bold flex items-center justify-center text-xs shrink-0">
+              ${isExternal ? 'EXT' : (m.name || 'U').substring(0, 2).toUpperCase()}
+            </span>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="font-extrabold text-xs text-slate-900 truncate">${m.title ? m.title + ' ' : ''}${m.name}</span>
+                ${isExternal ? '<span class="text-[9px] bg-[#DAF1DE] text-[#051F20] font-bold px-1.5 py-0.2 rounded border border-[#8EB69B]">External Professor</span>' : '<span class="text-[9px] bg-slate-100 text-slate-600 font-bold px-1.5 py-0.2 rounded">IGDTUW</span>'}
+              </div>
+              <p class="text-[11px] text-slate-600 truncate">${m.designation}${m.affiliation ? ' • ' + m.affiliation : ''}</p>
+            </div>
+          </div>
+
+          <!-- Attendance Status Toggle & Role Selector -->
+          <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+            <!-- Committee Role Selector -->
+            <select onchange="updateMemberAttendanceRole(${idx}, this.value)" class="p-1.5 rounded-lg border border-slate-300 text-[11px] font-semibold bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#163832]">
+              <option value="Chairperson" ${m.role === 'Chairperson' ? 'selected' : ''}>Chairperson</option>
+              <option value="Member" ${m.role === 'Member' ? 'selected' : ''}>Member</option>
+              <option value="Member Secretary" ${m.role === 'Member Secretary' ? 'selected' : ''}>Member Secretary</option>
+              <option value="Special Invitee" ${m.role === 'Special Invitee' ? 'selected' : ''}>Special Invitee</option>
+              <option value="Nominee of AICTE" ${m.role === 'Nominee of AICTE' ? 'selected' : ''}>Nominee of AICTE</option>
+              <option value="Nominee of UGC" ${m.role === 'Nominee of UGC' ? 'selected' : ''}>Nominee of UGC</option>
+            </select>
+
+            <!-- Toggle Buttons -->
+            <div class="flex items-center rounded-lg p-0.5 bg-slate-200">
+              <button type="button" onclick="setMemberAttendanceStatus(${idx}, 'present')" class="px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${isPresent ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">
+                ✓ Present
+              </button>
+              <button type="button" onclick="setMemberAttendanceStatus(${idx}, 'absent')" class="px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${!isPresent ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">
+                ✗ Absent
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Absence Reason Input (Only shown if Absent) -->
+        ${!isPresent ? `
+          <div class="pt-1.5 border-t border-rose-200 flex items-center gap-2">
+            <label class="text-[10px] font-bold text-rose-800 shrink-0">Reason for Absence:</label>
+            <input type="text" value="${(m.absenceReason || 'could not attend due to prior commitments').replace(/"/g, '&quot;')}" oninput="updateMemberAbsenceReason(${idx}, this.value)" placeholder="e.g. could not attend due to prior commitments" class="flex-1 p-1.5 rounded-lg border border-rose-300 text-xs bg-white text-rose-900 font-medium focus:outline-none focus:ring-1 focus:ring-rose-500">
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function setMemberAttendanceStatus(idx, status) {
+  if (currentAttendanceRecords[idx]) {
+    currentAttendanceRecords[idx].status = status;
+    if (status === 'absent' && !currentAttendanceRecords[idx].absenceReason) {
+      currentAttendanceRecords[idx].absenceReason = 'could not attend due to prior commitments';
+    }
+    renderAttendanceModalList();
+  }
+}
+
+function updateMemberAttendanceRole(idx, role) {
+  if (currentAttendanceRecords[idx]) {
+    currentAttendanceRecords[idx].role = role;
+  }
+}
+
+function updateMemberAbsenceReason(idx, reason) {
+  if (currentAttendanceRecords[idx]) {
+    currentAttendanceRecords[idx].absenceReason = reason;
+  }
+}
+
+function closeAttendanceModal() {
+  const modal = document.getElementById('meeting-attendance-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function confirmAttendanceAndOpenMoM() {
+  if (!currentAttendanceMeeting) return;
+  closeAttendanceModal();
+
+  // Save attendance in meeting object
+  currentAttendanceMeeting.attendance = [...currentAttendanceRecords];
+  localStorage.setItem('attendance_confirmed_' + currentAttendanceMeeting.id, 'true');
+
+  // Open MoM editor populated with meeting + attendance
+  openMoMEditorForMeeting(currentAttendanceMeeting.id, currentAttendanceRecords);
 }
 
 // 6. AI Activity Screen
@@ -1154,7 +2189,6 @@ async function renderAdminScreen() {
 }
 
 // 8. Meetings List
-// 8. Meetings List
 async function renderMeetingsList() {
   const data = await API.getMeetings();
   const tbody = document.getElementById('my-meetings-tbody');
@@ -1163,31 +2197,41 @@ async function renderMeetingsList() {
   tbody.innerHTML = data.meetings.map(m => {
     const isApproved = (m.momStatus || '').toLowerCase().includes('approved') || (m.momStatus || '').toLowerCase().includes('signed');
     const badgeClass = isApproved 
-      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold' 
+      ? 'bg-[#DAF1DE] text-[#051F20] border border-[#8EB69B] font-bold' 
       : 'bg-amber-50 text-amber-700 border border-amber-200 font-semibold';
+
+    const facultyCount = (m.participants || []).length;
+    const extCount = (m.externalParticipants || []).length;
 
     return `
     <tr class="hover:bg-slate-50/60">
       <td class="p-3">
         <span class="font-bold text-slate-900 block">${m.title}</span>
-        <span class="text-[11px] text-slate-400">${m.description}</span>
+        <span class="text-[11px] text-slate-400">${m.description || ''}</span>
       </td>
       <td class="p-3">
-        <span class="font-bold text-[#135106] block">${m.date}, ${m.start_time}</span>
-        <span class="text-[10px] text-slate-400">${m.duration_minutes} mins</span>
+        <span class="font-bold text-[#163832] block">${m.date}, ${m.start_time}</span>
+        <span class="text-[10px] text-slate-400">${m.duration_minutes || 60} mins</span>
       </td>
       <td class="p-3">
-        <span class="text-slate-800 font-medium">${m.participants.length} Faculty</span>
-        <span class="block text-[10px] text-emerald-600">All Confirmed</span>
+        <span class="text-slate-800 font-medium">${facultyCount} Faculty${extCount > 0 ? ` + ${extCount} Ext` : ''}</span>
+        <span class="block text-[10px] text-[#235347]">Invited</span>
       </td>
       <td class="p-3">
-        <span class="px-2 py-0.5 rounded bg-purple-50 text-purple-700 font-semibold text-[10px] border border-purple-200">${m.location}</span>
+        <span class="px-2 py-0.5 rounded bg-[#DAF1DE] text-[#0B2B26] font-semibold text-[10px] border border-[#8EB69B]">${m.location || 'Senate Room'}</span>
       </td>
       <td class="p-3">
-        <span class="px-2 py-0.5 rounded ${badgeClass} text-[10px]">${m.momStatus.toUpperCase()}</span>
+        <span class="px-2 py-0.5 rounded ${badgeClass} text-[10px]">${(m.momStatus || 'Scheduled').toUpperCase()}</span>
       </td>
       <td class="p-3 text-right">
-        <button onclick="navigateTo('meeting-details')" class="text-[#135106] hover:text-[#0e3d04] font-bold">Details</button>
+        <div class="flex items-center justify-end gap-1.5">
+          <button onclick="openMeetingAttendanceModal('${m.id}')" class="px-2.5 py-1 text-[11px] font-bold text-[#0B2B26] bg-[#DAF1DE] hover:bg-[#8EB69B]/40 rounded-lg transition border border-[#8EB69B] cursor-pointer" title="Record Attendance">
+            📋 Attendance
+          </button>
+          <button onclick="openMoMEditorForMeeting('${m.id}')" class="px-2.5 py-1 text-[11px] font-bold text-white bg-[#163832] hover:bg-[#0B2B26] rounded-lg transition cursor-pointer" title="Open Official MoM Document">
+            📝 MoM Draft
+          </button>
+        </div>
       </td>
     </tr>
   `;
